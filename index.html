@@ -23,10 +23,12 @@
     </style>
   </head>
   <body>
+    <label><small>Slide to the right to increase the number of simulation ticks per frame rendered</small></label>
     <input id="ticks-frequency" type="range" min="1", max="10" value="1">
     <button id="play-pause"></button>
-    <button id="reset-universe-random">Reset to random</button>
-    <button id="reset-universe-dead">Reset to blank</button>
+    <button id="next-frame">Next Frame</button>
+    <button id="reset-universe-random">Reset</button>
+    <button id="reset-universe-dead">Clear</button>
     <div id="fps"></div>
     <canvas id="game-of-life-canvas"></pre>
     <script src="./bootstrap.js"></script>

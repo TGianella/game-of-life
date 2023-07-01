@@ -23,9 +23,18 @@ const playPauseButton = document.getElementById("play-pause");
 const ticksSlider = document.getElementById("ticks-frequency");
 const resetRandomButton = document.getElementById("reset-universe-random");
 const resetBlankButton = document.getElementById("reset-universe-dead");
+const nextFrameButton = document.getElementById("next-frame");
 
 let animationId = null;
 let ticksFrequency = 1;
+
+nextFrameButton.addEventListener("click", event => {
+  if (isPaused()) {
+    drawGrid();
+    drawCells();
+    universe.tick();
+  }
+})
 
 resetRandomButton.addEventListener("click", event => {
   universe = Universe.new(false);
