@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Hello wasm-pack!</title>
+    <title>The Game of Life</title>
     <style>
       body {
         position: absolute;
@@ -14,23 +14,96 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        font-family: monospace;
       }
 
-      #fps {
+      #fps, #generations-counter {
         white-space: pre;
-        font-family: monospace;
+        margin-bottom: 5px;
+      }
+
+      canvas {
+        border: solid black 1px;
+      }
+
+      label {
+        max-width: 33%;
+        text-align: center;
+      }
+
+      input {
+        margin: 5px;
+      }
+
+      #buttons {
+        margin: 5px;
+      }
+
+      option {
+        padding: 0;
+      }
+
+      datalist {
+        display: flex;
+        justify-content: space-between;
+        width: 150px;
+        font-size: small;
+        margin-left: 10px;
+      }
+
+      #wrapper {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        gap: 20px;
+      }
+
+      #interaction {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
     </style>
   </head>
   <body>
-    <label><small>Slide to the right to increase the number of simulation ticks per frame rendered</small></label>
-    <input id="ticks-frequency" type="range" min="1", max="10" value="1">
-    <button id="play-pause"></button>
-    <button id="next-frame">Next Frame</button>
-    <button id="reset-universe-random">Reset</button>
-    <button id="reset-universe-dead">Clear</button>
-    <p id="generations-counter"><p>
-    <div id="fps"></div>
+    <h1>The Game of Life</h1>
+    <div id="wrapper">
+      <div id="instructions">
+        <ul>
+          <li>Click on a cell to change its state</li>
+          <li>Ctrl-click creates a glider</li>
+          <li>Maj-click creates a pulsar</li>
+        </ul>
+      </div>
+      <div id="interaction">
+        <div id="slider">
+          <label>Simulation ticks per frame rendered</label><br/>
+          <input id="ticks-frequency" type="range" min="1" max="10" value="1" list="markers">
+          <datalist id="markers">
+            <option value="1" label="1"></option>
+            <option value="2"></option>
+            <option value="3"></option>
+            <option value="4"></option>
+            <option value="5"></option>
+            <option value="6"></option>
+            <option value="7"></option>
+            <option value="8"></option>
+            <option value="9"></option>
+            <option value="10" label="10"></option>
+          </datalist>
+        </div>
+        <div id="buttons">
+          <button id="play-pause"></button>
+          <button id="next-frame">Next generation</button>
+          <button id="reset-universe-random">Reset</button>
+          <button id="reset-universe-dead">Clear</button>
+        </div>
+      </div>
+      <div id="metrics">
+        <div id="generations-counter"></div>
+        <div id="fps"></div>
+      </div>
+    </div>
     <canvas id="game-of-life-canvas"></pre>
     <script src="./bootstrap.js"></script>
   </body>

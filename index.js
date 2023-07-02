@@ -32,7 +32,7 @@ let generationsCount = 0;
 
 function updateGenerationsCount(step) {
   generationsCount += Number(step);
-  generationsCounter.textContent = `Generations = ${generationsCount}`
+  generationsCounter.textContent = `Generation ${generationsCount}`
 }
 
 nextFrameButton.addEventListener("click", event => {
