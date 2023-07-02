@@ -24,15 +24,23 @@ const ticksSlider = document.getElementById("ticks-frequency");
 const resetRandomButton = document.getElementById("reset-universe-random");
 const resetBlankButton = document.getElementById("reset-universe-dead");
 const nextFrameButton = document.getElementById("next-frame");
+const generationsCounter = document.getElementById("generations-counter");
 
 let animationId = null;
 let ticksFrequency = 1;
+let generationsCount = 0;
+
+function updateGenerationsCount(step) {
+  generationsCount += Number(step);
+  generationsCounter.textContent = `Generations = ${generationsCount}`
+}
 
 nextFrameButton.addEventListener("click", event => {
   if (isPaused()) {
     drawGrid();
     drawCells();
     universe.tick();
+    updateGenerationsCount(1);
   }
 })
 
@@ -155,6 +163,7 @@ canvas.addEventListener("click", event => {
 
 function renderLoop() {
   fps.render();
+  updateGenerationsCount(ticksFrequency);
 
   drawGrid();
   drawCells();
