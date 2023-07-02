@@ -46,11 +46,18 @@ nextFrameButton.addEventListener("click", event => {
 
 resetRandomButton.addEventListener("click", event => {
   universe = Universe.new(false);
+  generationsCount = 0;
+  updateGenerationsCount(0);
   drawCells();
 })
 
 resetBlankButton.addEventListener("click", event => {
+  if (!isPaused()) {
+    pause();
+  }
   universe = Universe.new(true);
+  generationsCount = 0;
+  updateGenerationsCount(0);
   drawCells();
 })
 
