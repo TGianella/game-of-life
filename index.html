@@ -67,6 +67,7 @@
   </head>
   <body>
     <h1>The Game of Life</h1>
+    <p>A Rust + WebAssembly + JavaScript implementation of <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">Conway's Game of Life</a>.</p>
     <div id="wrapper">
       <div id="instructions">
         <ul>
@@ -77,7 +78,7 @@
       </div>
       <div id="interaction">
         <div id="slider">
-          <label>Simulation ticks per frame rendered</label><br/>
+          <label>Generations per frame rendered</label><br/>
           <input id="ticks-frequency" type="range" min="1" max="10" value="1" list="markers">
           <datalist id="markers">
             <option value="1" label="1"></option>
