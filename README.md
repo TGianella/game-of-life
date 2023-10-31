@@ -9,7 +9,7 @@
 
 A web app implementing the game of life, done in Rust + WebAssembly + Js, following [the community's guide](https://rustwasm.github.io/docs/book/game-of-life/introduction.html).
 
-Play with it [here](tgianella.github.io/game-of-life/).
+Play with it [here](https://tgianella.github.io/game-of-life/).
 
 ## Features
 * It runs fast (fps counter included)
