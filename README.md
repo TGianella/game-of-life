@@ -9,7 +9,7 @@
 
 A web app implementing the game of life, done in Rust + WebAssembly + Js, following [the community's guide](https://rustwasm.github.io/docs/book/game-of-life/introduction.html).
 
-Play with it [here](https://the-gossip-project-77f559ad5921.herokuapp.com/).
+Play with it [here](https://tgianella.github.io/game-of-life/).
 
 ## Features
 * It runs fast (fps counter included)
@@ -20,6 +20,15 @@ Play with it [here](https://the-gossip-project-77f559ad5921.herokuapp.com/).
 * Click to change a cell state, ctrl-click to create a glider, shift-clitk to create a pulsar
 
 ## Features I'd like to implement
+
+### Features
 * Select menu to select shape added on ctrl and maj-click
+* Rotate shapes
 * Select universe size
 * Go back in time (highly unrealistic right now !)
+
+### Optimisation
+* Transition from canvas to webGL for rendering
+* Remove allocation of vectors at each universe tick
+* Return list of deltas instead of a whole univers with each tick
+* Instantiate only a single universe to remove all dynamic allocation.
