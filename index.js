@@ -1,21 +1,21 @@
-import { Universe, Cell } from "wasm-game-of-life";
-import { memory } from "./pkg/wasm_game_of_life_bg";
+import { Universe, Cell } from "./pkg/game-of-life.js";
 
-const CELL_SIZE = 5; // px
 const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 
+let height = 100;
+let width = 100;
+let cellSize = 5; //px
+
 // Construct the universe, get its width and height.
-let universe = Universe.new(false);
-const width = universe.width();
-const height = universe.height();
+let universe = new Universe(false, width, height);
 
 // Give the canvas room for all of our cells and a 1px border
 // around each of them.
 const canvas = document.getElementById("game-of-life-canvas");
-canvas.height = (CELL_SIZE + 1) * height + 1;
-canvas.width = (CELL_SIZE + 1) * width + 1;
+canvas.height = (cellSize + 1) * height + 1;
+canvas.width = (cellSize + 1) * width + 1;
 
 const ctx = canvas.getContext('2d');
 
@@ -25,10 +25,14 @@ const resetRandomButton = document.getElementById("reset-universe-random");
 const resetBlankButton = document.getElementById("reset-universe-dead");
 const nextFrameButton = document.getElementById("next-frame");
 const generationsCounter = document.getElementById("generations-counter");
+const heightInput = document.getElementById("height");
+const widthInput = document.getElementById("width");
+const cellSizeSelector = document.getElementById("cell-size");
 
 let animationId = null;
 let ticksFrequency = 1;
 let generationsCount = 0;
+console.time('1000th generation');
 
 function updateGenerationsCount(step) {
   generationsCount += Number(step);
@@ -45,7 +49,9 @@ nextFrameButton.addEventListener("click", event => {
 })
 
 resetRandomButton.addEventListener("click", event => {
-  universe = Universe.new(false);
+  universe = new Universe(false, width, height);
+  console.timeEnd('1000th generation');
+  console.time('1000th generation');
   generationsCount = 0;
   updateGenerationsCount(0);
   drawCells();
@@ -55,7 +61,9 @@ resetBlankButton.addEventListener("click", event => {
   if (!isPaused()) {
     pause();
   }
-  universe = Universe.new(true);
+  universe = new Universe(true, width, height);
+  console.timeEnd('1000th generation');
+  console.time('1000th generation');
   generationsCount = 0;
   updateGenerationsCount(0);
   drawCells();
@@ -84,6 +92,39 @@ playPauseButton.addEventListener("click", event => {
   }
 });
 
+heightInput.addEventListener("change", event => {
+  height = Number(event.target.value);
+  universe = new Universe(false, width, height);
+  console.timeEnd('1000th generation');
+  console.time('1000th generation');
+  generationsCount = 0;
+  updateGenerationsCount(0);
+  resizeCanvas();
+  drawCells();
+})
+
+widthInput.addEventListener("change", event => {
+  width = Number(event.target.value);
+  universe = new Universe(false, width, height);
+  console.timeEnd('1000th generation');
+  console.time('1000th generation');
+  generationsCount = 0;
+  updateGenerationsCount(0);
+  resizeCanvas();
+  drawCells();
+})
+
+cellSizeSelector.addEventListener("change", event => {
+  cellSize = Number(event.target.value)
+  resizeCanvas();
+  drawCells();
+})
+
+function resizeCanvas() {
+  canvas.height = (cellSize + 1) * height + 1;
+  canvas.width = (cellSize + 1) * width + 1;
+}
+
 canvas.addEventListener("click", event => {
   const boundingRect = canvas.getBoundingClientRect();
 
@@ -93,8 +134,8 @@ canvas.addEventListener("click", event => {
   const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
   const canvasTop = (event.clientY - boundingRect.top) * scaleY;
 
-  const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), height - 1);
-  const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), width - 1);
+  const row = Math.min(Math.floor(canvasTop / (cellSize + 1)), height - 1);
+  const col = Math.min(Math.floor(canvasLeft / (cellSize + 1)), width - 1);
 
   if (event.ctrlKey === false && event.shiftKey === false) {
     universe.toggle_cell(row, col);
@@ -179,6 +220,10 @@ function renderLoop() {
     universe.tick();
   }
 
+  if (generationsCount === 1000) {
+    console.timeEnd('1000th generation');
+  }
+
   animationId = requestAnimationFrame(renderLoop);
 }
 
@@ -192,14 +237,14 @@ function drawGrid() {
 
   // Vertical lines.
   for (let i = 0; i <= width; i++) {
-    ctx.moveTo(i * (CELL_SIZE + 1) + 1, 0);
-    ctx.moveTo(i * (CELL_SIZE + 1) + 1, (CELL_SIZE + 1) * height + 1);
+    ctx.moveTo(i * (cellSize + 1) + 1, 0);
+    ctx.moveTo(i * (cellSize + 1) + 1, (cellSize + 1) * height + 1);
   }
 
   // Vertical lines.
   for (let j = 0; j <= height; j++) {
-    ctx.moveTo(0,                           j * (CELL_SIZE + 1) + 1);
-    ctx.moveTo((CELL_SIZE + 1) * width + 1, j * (CELL_SIZE + 1) + 1);
+    ctx.moveTo(0,                           j * (cellSize + 1) + 1);
+    ctx.moveTo((cellSize + 1) * width + 1, j * (cellSize + 1) + 1);
   }
 
   ctx.stroke();
@@ -210,8 +255,7 @@ function getIndex(row, column) {
 };
 
 function drawCells() {
-  const cellsPtr = universe.cells();
-  const cells = new Uint8Array(memory.buffer, cellsPtr, width * height);
+  const cells = universe.cells;
 
   ctx.beginPath();
 
@@ -219,15 +263,15 @@ function drawCells() {
   for (let row = 0; row < height; row++) {
     for (let col = 0; col < width; col++) {
       const idx = getIndex(row, col);
-      if (cells[idx] !== 1) {
+      if (!cells[idx].state) {
         continue;
       }
 
       ctx.fillRect(
-        col * (CELL_SIZE + 1) + 1,
-        row * (CELL_SIZE + 1) + 1,
-        CELL_SIZE,
-        CELL_SIZE
+        col * (cellSize + 1) + 1,
+        row * (cellSize + 1) + 1,
+        cellSize,
+        cellSize
       );
     }
   }
@@ -236,15 +280,15 @@ function drawCells() {
   for (let row = 0; row < height; row++) {
     for (let col = 0; col < width; col++) {
       const idx = getIndex(row, col);
-      if (cells[idx] !== 0) {
+      if (cells[idx].state) {
         continue;
       }
 
       ctx.fillRect(
-        col * (CELL_SIZE + 1) + 1,
-        row * (CELL_SIZE + 1) + 1,
-        CELL_SIZE,
-        CELL_SIZE
+        col * (cellSize + 1) + 1,
+        row * (cellSize + 1) + 1,
+        cellSize,
+        cellSize
       );
     }
   }
