@@ -65,8 +65,8 @@ export class Universe {
   }
 
   tick() {
-    let tickTimer = new Timer("Universe.tick");
-    let generationTimer = new Timer("new generation");
+    // let tickTimer = new Timer("Universe.tick");
+    // let generationTimer = new Timer("new generation");
     const next = [...this.cells];
 
     for (let row = 0; row < this.height; row++) {
@@ -98,11 +98,11 @@ export class Universe {
         next[idx] = next_cell;
       }
     }
-    let freeTimer = new Timer("free old cells");
+    // let freeTimer = new Timer("free old cells");
     this.cells = next;
-    generationTimer.drop();
-    freeTimer.drop();
-    tickTimer.drop();
+    // generationTimer.drop();
+    // freeTimer.drop();
+    // tickTimer.drop();
   }
 
   set_width(width) {

@@ -96,7 +96,9 @@ playPauseButton.addEventListener("click", event => {
 
 heightInput.addEventListener("change", event => {
   height = Number(event.target.value);
+  console.log("###creating universe");
   universe = new Universe(false, width, height);
+  console.log("###universe created");
   console.timeEnd('1000th generation');
   console.time('1000th generation');
   generationsCount = 0;
@@ -114,10 +116,6 @@ widthInput.addEventListener("change", event => {
   updateGenerationsCount(0);
   resizeCanvas();
   resizeCanvas();
-  drawCells();
-})
-
-cellSizeSelector.addEventListener("change", event => {
   drawCells();
 })
 
