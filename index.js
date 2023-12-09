@@ -28,6 +28,8 @@ const generationsCounter = document.getElementById("generations-counter");
 const heightInput = document.getElementById("height");
 const widthInput = document.getElementById("width");
 const cellSizeSelector = document.getElementById("cell-size");
+const panelButton = document.getElementById("panelBtn");
+const panel = document.getElementById("panel");
 
 let animationId = null;
 let ticksFrequency = 1;
@@ -111,6 +113,11 @@ widthInput.addEventListener("change", event => {
   generationsCount = 0;
   updateGenerationsCount(0);
   resizeCanvas();
+  resizeCanvas();
+  drawCells();
+})
+
+cellSizeSelector.addEventListener("change", event => {
   drawCells();
 })
 
@@ -118,6 +125,10 @@ cellSizeSelector.addEventListener("change", event => {
   cellSize = Number(event.target.value)
   resizeCanvas();
   drawCells();
+})
+
+panelButton.addEventListener('click', event => {
+  panel.classList.toggle("open");
 })
 
 function resizeCanvas() {
