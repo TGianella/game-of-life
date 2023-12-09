@@ -1,15 +1,16 @@
 import { Universe, Cell } from "wasm-game-of-life";
-import { memory } from "./pkg/wasm_game_of_life_bg";
+import { memory } from "wasm-game-of-life/wasm_game_of_life_bg";
 
 const CELL_SIZE = 5; // px
 const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 
+const width = 64;
+const height = 64;
+
 // Construct the universe, get its width and height.
-let universe = Universe.new(false);
-const width = universe.width();
-const height = universe.height();
+let universe = Universe.new(false, width, height);
 
 // Give the canvas room for all of our cells and a 1px border
 // around each of them.
