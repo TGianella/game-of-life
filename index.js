@@ -31,7 +31,6 @@ const widthInput = document.getElementById("width");
 const cellSizeSelector = document.getElementById("cell-size");
 const panelButton = document.getElementById("panelBtn");
 const panel = document.getElementById("panel");
-const time = document.getElementById("time");
 
 let animationId = null;
 let ticksFrequency = 1;
@@ -120,10 +119,6 @@ widthInput.addEventListener("change", event => {
 })
 
 cellSizeSelector.addEventListener("change", event => {
-  drawCells();
-})
-
-cellSizeSelector.addEventListener("change", event => {
   cellSize = Number(event.target.value)
   resizeCanvas();
   drawCells();
@@ -137,11 +132,6 @@ function resizeCanvas() {
   canvas.height = (cellSize + 1) * height + 1;
   canvas.width = (cellSize + 1) * width + 1;
 }
-
-time.addEventListener("click", event => {
-  console.log("event listener")
-  calculateTime();
-})
 
 canvas.addEventListener("click", event => {
   const boundingRect = canvas.getBoundingClientRect();
@@ -313,19 +303,6 @@ function drawCells() {
   }
   
   ctx.stroke();
-}
-
-function calculateTime() {
-  console.log("coucou")
-  for (let i = 9800; i < 10000; i += 100) {
-    universe = Universe.new(false, i, 100)
-    console.time(`${i / 100}- 1000th generation size: ${i * 100} cells`)
-    for (let gen = 0; gen < 1000; gen++) {
-      universe.tick();
-    }
-    console.timeEnd(`${i / 100}- 1000th generation size: ${i * 100} cells`)
-  }
-  console.log("####### FIN DU TEST #########")
 }
 
 const fps = new class {
