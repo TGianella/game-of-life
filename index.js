@@ -5,9 +5,9 @@ const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 
-let height = 200;
-let width = 200;
-let cellSize = 2; //px
+let height = 100;
+let width = 100;
+let cellSize = 5; //px
 
 // Construct the universe, get its width and height.
 let universe = Universe.new(false, width, height);
@@ -317,7 +317,7 @@ function drawCells() {
 
 function calculateTime() {
   console.log("coucou")
-  for (let i = 100; i < 10000; i += 100) {
+  for (let i = 9800; i < 10000; i += 100) {
     universe = Universe.new(false, i, 100)
     console.time(`${i / 100}- 1000th generation size: ${i * 100} cells`)
     for (let gen = 0; gen < 1000; gen++) {
