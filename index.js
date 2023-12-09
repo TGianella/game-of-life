@@ -1,13 +1,13 @@
 import { Universe, Cell } from "wasm-game-of-life";
 import { memory } from "wasm-game-of-life/wasm_game_of_life_bg";
 
-const CELL_SIZE = 5; // px
 const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 
-const width = 64;
-const height = 64;
+let height = 200;
+let width = 200;
+let cellSize = 2; //px
 
 // Construct the universe, get its width and height.
 let universe = Universe.new(false, width, height);
@@ -15,8 +15,8 @@ let universe = Universe.new(false, width, height);
 // Give the canvas room for all of our cells and a 1px border
 // around each of them.
 const canvas = document.getElementById("game-of-life-canvas");
-canvas.height = (CELL_SIZE + 1) * height + 1;
-canvas.width = (CELL_SIZE + 1) * width + 1;
+canvas.height = (cellSize + 1) * height + 1;
+canvas.width = (cellSize + 1) * width + 1;
 
 const ctx = canvas.getContext('2d');
 
@@ -26,10 +26,17 @@ const resetRandomButton = document.getElementById("reset-universe-random");
 const resetBlankButton = document.getElementById("reset-universe-dead");
 const nextFrameButton = document.getElementById("next-frame");
 const generationsCounter = document.getElementById("generations-counter");
+const heightInput = document.getElementById("height");
+const widthInput = document.getElementById("width");
+const cellSizeSelector = document.getElementById("cell-size");
+const panelButton = document.getElementById("panelBtn");
+const panel = document.getElementById("panel");
+const time = document.getElementById("time");
 
 let animationId = null;
 let ticksFrequency = 1;
 let generationsCount = 0;
+console.time('1000th generation');
 
 function updateGenerationsCount(step) {
   generationsCount += Number(step);
@@ -46,7 +53,9 @@ nextFrameButton.addEventListener("click", event => {
 })
 
 resetRandomButton.addEventListener("click", event => {
-  universe = Universe.new(false);
+  universe = Universe.new(false, width, height);
+  console.timeEnd('1000th generation');
+  console.time('1000th generation');
   generationsCount = 0;
   updateGenerationsCount(0);
   drawCells();
@@ -56,7 +65,9 @@ resetBlankButton.addEventListener("click", event => {
   if (!isPaused()) {
     pause();
   }
-  universe = Universe.new(true);
+  universe = Universe.new(true, width, height);
+  console.timeEnd('1000th generation');
+  console.time('1000th generation');
   generationsCount = 0;
   updateGenerationsCount(0);
   drawCells();
@@ -85,6 +96,53 @@ playPauseButton.addEventListener("click", event => {
   }
 });
 
+heightInput.addEventListener("change", event => {
+  height = Number(event.target.value);
+  universe = Universe.new(false, width, height);
+  console.timeEnd('1000th generation');
+  console.time('1000th generation');
+  generationsCount = 0;
+  updateGenerationsCount(0);
+  resizeCanvas();
+  drawCells();
+})
+
+widthInput.addEventListener("change", event => {
+  width = Number(event.target.value);
+  universe = Universe.new(false, width, height);
+  console.timeEnd('1000th generation');
+  console.time('1000th generation');
+  generationsCount = 0;
+  updateGenerationsCount(0);
+  resizeCanvas();
+  resizeCanvas();
+  drawCells();
+})
+
+cellSizeSelector.addEventListener("change", event => {
+  drawCells();
+})
+
+cellSizeSelector.addEventListener("change", event => {
+  cellSize = Number(event.target.value)
+  resizeCanvas();
+  drawCells();
+})
+
+panelButton.addEventListener('click', event => {
+  panel.classList.toggle("open");
+})
+
+function resizeCanvas() {
+  canvas.height = (cellSize + 1) * height + 1;
+  canvas.width = (cellSize + 1) * width + 1;
+}
+
+time.addEventListener("click", event => {
+  console.log("event listener")
+  calculateTime();
+})
+
 canvas.addEventListener("click", event => {
   const boundingRect = canvas.getBoundingClientRect();
 
@@ -94,8 +152,8 @@ canvas.addEventListener("click", event => {
   const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
   const canvasTop = (event.clientY - boundingRect.top) * scaleY;
 
-  const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), height - 1);
-  const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), width - 1);
+  const row = Math.min(Math.floor(canvasTop / (cellSize + 1)), height - 1);
+  const col = Math.min(Math.floor(canvasLeft / (cellSize + 1)), width - 1);
 
   if (event.ctrlKey === false && event.shiftKey === false) {
     universe.toggle_cell(row, col);
@@ -180,6 +238,10 @@ function renderLoop() {
     universe.tick();
   }
 
+  if (generationsCount === 1000) {
+    console.timeEnd('1000th generation');
+  }
+
   animationId = requestAnimationFrame(renderLoop);
 }
 
@@ -193,14 +255,14 @@ function drawGrid() {
 
   // Vertical lines.
   for (let i = 0; i <= width; i++) {
-    ctx.moveTo(i * (CELL_SIZE + 1) + 1, 0);
-    ctx.moveTo(i * (CELL_SIZE + 1) + 1, (CELL_SIZE + 1) * height + 1);
+    ctx.moveTo(i * (cellSize + 1) + 1, 0);
+    ctx.moveTo(i * (cellSize + 1) + 1, (cellSize + 1) * height + 1);
   }
 
   // Vertical lines.
   for (let j = 0; j <= height; j++) {
-    ctx.moveTo(0,                           j * (CELL_SIZE + 1) + 1);
-    ctx.moveTo((CELL_SIZE + 1) * width + 1, j * (CELL_SIZE + 1) + 1);
+    ctx.moveTo(0,                           j * (cellSize + 1) + 1);
+    ctx.moveTo((cellSize + 1) * width + 1, j * (cellSize + 1) + 1);
   }
 
   ctx.stroke();
@@ -225,10 +287,10 @@ function drawCells() {
       }
 
       ctx.fillRect(
-        col * (CELL_SIZE + 1) + 1,
-        row * (CELL_SIZE + 1) + 1,
-        CELL_SIZE,
-        CELL_SIZE
+        col * (cellSize + 1) + 1,
+        row * (cellSize + 1) + 1,
+        cellSize,
+        cellSize
       );
     }
   }
@@ -242,15 +304,28 @@ function drawCells() {
       }
 
       ctx.fillRect(
-        col * (CELL_SIZE + 1) + 1,
-        row * (CELL_SIZE + 1) + 1,
-        CELL_SIZE,
-        CELL_SIZE
+        col * (cellSize + 1) + 1,
+        row * (cellSize + 1) + 1,
+        cellSize,
+        cellSize
       );
     }
   }
   
   ctx.stroke();
+}
+
+function calculateTime() {
+  console.log("coucou")
+  for (let i = 100; i < 10000; i += 100) {
+    universe = Universe.new(false, i, 100)
+    console.time(`${i / 100}- 1000th generation size: ${i * 100} cells`)
+    for (let gen = 0; gen < 1000; gen++) {
+      universe.tick();
+    }
+    console.timeEnd(`${i / 100}- 1000th generation size: ${i * 100} cells`)
+  }
+  console.log("####### FIN DU TEST #########")
 }
 
 const fps = new class {

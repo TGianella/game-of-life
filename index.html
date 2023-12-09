@@ -37,6 +37,11 @@
 
       #buttons {
         margin: 5px;
+        flex-flow: row wrap;
+        max-width: 200px;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
       }
 
       option {
@@ -64,24 +69,48 @@
         flex-direction: column;
         align-items: center;
       }
+
+      #panel {
+        position: fixed;
+        z-index: 1;
+        top: 0;
+        left: 100%;
+        overflow-x: hidden;
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 0 0 0 10px;
+        display: flex;
+        flex-direction: column;
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .open {
+        transform: translateX(-100%);
+      }
+
+      #panelBtn {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 2;
+      }
+
+      .btn {
+        max-width: 75%;
+        margin: 2px;
+      }
     </style>
   </head>
   <body>
-    <h1>The Game of Life</h1>
-    <p>A Rust + WebAssembly + JavaScript implementation of <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">Conway's Game of Life</a>.</p>
-    <a href="https://www.youtube.com/watch?v=gKgAaZ7a5Bs">An excellent video (in French) explaining the game</a>
-    <div id="wrapper">
-      <div id="instructions">
-        <ul>
-          <li>Click on a cell to change its state</li>
-          <li>Ctrl-click creates a glider</li>
-          <li>Maj-click creates a pulsar</li>
-        </ul>
-      </div>
-      <div id="interaction">
-        <div id="slider">
-          <label>Generations per frame rendered</label><br/>
-          <input id="ticks-frequency" type="range" min="1" max="10" value="1" list="markers">
+    <button id="time">time</button>
+    <button id="panelBtn">⚙</button>
+    <div id="panel">
+      <div id="slider">
+        <label style="white-space: pre-line">
+          Generations per
+          frame rendered
+        </label>
+        <input id="ticks-frequency" type="range" min="1" max="10" value="1" list="markers" autocomplete="off">
           <datalist id="markers">
             <option value="1" label="1"></option>
             <option value="2"></option>
@@ -94,15 +123,55 @@
             <option value="9"></option>
             <option value="10" label="10"></option>
           </datalist>
+        </input>
+      </div>
+      <div id="buttons">
+        <button id="play-pause" class="btn"></button>
+        <button id="reset-universe-random" class="btn">Reset</button>
+        <button id="reset-universe-dead" class="btn">Clear</button>
+        <button id="next-frame" class="btn">Next generation</button>
+        <div>
+          <label>Width</label>
+          <select name="width" id="width" autocomplete="off">
+            <option value="100" selected>100</option>
+            <option value="200">200</option>
+            <option value="300">300</option>
+            <option value="400">400</option>
+            <option value="500">500</option>
+            <option value="600">600</option>
+            <option value="700">700</option>
+            <option value="800">800</option>
+            <option value="900">900</option>
+            <option value="1000">1000</option>
+          </select>
         </div>
-        <div id="buttons">
-          <button id="play-pause"></button>
-          <button id="next-frame">Next generation</button>
-          <button id="reset-universe-random">Reset</button>
-          <button id="reset-universe-dead">Clear</button>
+        <div>
+          <label>Height</label>
+          <select name="height" id="height" autocomplete="off">
+            <option value="100" selected>100</option>
+            <option value="200">200</option>
+            <option value="300">300</option>
+            <option value="400">400</option>
+            <option value="500">500</option>
+            <option value="600">600</option>
+            <option value="700">700</option>
+            <option value="800">800</option>
+            <option value="900">900</option>
+            <option value="1000">1000</option>
+          </select>
+        </div>
+        <div>
+          <label>Cell size</label>
+          <select id="cell-size" autocomplete="off">
+            <option value="1">1 px</option>
+            <option value="2">2 px</option>
+            <option value="3">3 px</option>
+            <option value="4">4 px</option>
+            <option value="5" selected>5 px</option>
+          </select>
         </div>
       </div>
-      <div id="metrics">
+      <div id="metrics" style="font-size: large; font-weight: bold" >
         <div id="generations-counter"></div>
         <div id="fps"></div>
       </div>
