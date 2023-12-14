@@ -7,7 +7,7 @@ const ALIVE_COLOR = "#000000";
 
 let height = 100;
 let width = 100;
-let cellSize = 5; //px
+let cellSize = 9; //px
 
 // Construct the universe, get its width and height.
 let universe = Universe.new(false, width, height);
