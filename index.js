@@ -1,16 +1,26 @@
-import { Universe, Cell } from "wasm-game-of-life";
 import { memory } from "wasm-game-of-life/wasm_game_of_life_bg";
+import { importUniverseWasm, importUniverseJs } from "./importUniverse";
+import { createUniverseWasm, createUniverseJs } from "./createUniverse";
+import { checkCellWasm, checkCellJs } from "./checkCell";
+
+let language = 'WASM';
+let importUniverse = importUniverseWasm;
+let createUniverse = createUniverseWasm;
+let checkCell = checkCellWasm;
 
 const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
+
+const logoWasmPath = "https://upload.wikimedia.org/wikipedia/commons/1/1f/WebAssembly_Logo.svg";
+const logoJsPath = "https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png";
 
 let height = 100;
 let width = 100;
 let cellSize = 9; //px
 
 // Construct the universe, get its width and height.
-let universe = Universe.new(false, width, height);
+let universe = createUniverse(false, width, height);
 
 // Give the canvas room for all of our cells and a 1px border
 // around each of them.
@@ -31,11 +41,15 @@ const widthInput = document.getElementById("width");
 const cellSizeSelector = document.getElementById("cell-size");
 const panelButton = document.getElementById("panelBtn");
 const panel = document.getElementById("panel");
+const logo = document.querySelector("img");
+const changeLanguageButton = document.getElementById("switch-language");
 
 let animationId = null;
 let ticksFrequency = 1;
 let generationsCount = 0;
 console.time('1000th generation');
+
+logo.setAttribute('src', logoWasmPath)
 
 function updateGenerationsCount(step) {
   generationsCount += Number(step);
@@ -52,7 +66,7 @@ nextFrameButton.addEventListener("click", event => {
 })
 
 resetRandomButton.addEventListener("click", event => {
-  universe = Universe.new(false, width, height);
+  universe = createUniverse(false, width, height);
   console.timeEnd('1000th generation');
   console.time('1000th generation');
   generationsCount = 0;
@@ -64,7 +78,7 @@ resetBlankButton.addEventListener("click", event => {
   if (!isPaused()) {
     pause();
   }
-  universe = Universe.new(true, width, height);
+  universe = createUniverse(true, width, height);
   console.timeEnd('1000th generation');
   console.time('1000th generation');
   generationsCount = 0;
@@ -97,7 +111,7 @@ playPauseButton.addEventListener("click", event => {
 
 heightInput.addEventListener("change", event => {
   height = Number(event.target.value);
-  universe = Universe.new(false, width, height);
+  universe = createUniverse(false, width, height);
   console.timeEnd('1000th generation');
   console.time('1000th generation');
   generationsCount = 0;
@@ -108,7 +122,7 @@ heightInput.addEventListener("change", event => {
 
 widthInput.addEventListener("change", event => {
   width = Number(event.target.value);
-  universe = Universe.new(false, width, height);
+  universe = createUniverse(false, width, height);
   console.timeEnd('1000th generation');
   console.time('1000th generation');
   generationsCount = 0;
@@ -132,6 +146,21 @@ function resizeCanvas() {
   canvas.height = (cellSize + 1) * height + 1;
   canvas.width = (cellSize + 1) * width + 1;
 }
+
+changeLanguageButton.addEventListener('click', event => {
+  language = language === 'WASM' ? 'JS' : 'WASM';
+  importUniverse = language === 'JS' ? importUniverseJs : importUniverseWasm;
+  createUniverse = language === 'JS' ? createUniverseJs : createUniverseWasm;
+  checkCell = language === 'JS' ? checkCellJs : checkCellWasm;
+  logo.setAttribute('src', language === "JS" ? logoJsPath : logoWasmPath);
+
+  universe = createUniverse(false, width, height);
+  console.timeEnd('1000th generation');
+  console.time('1000th generation');
+  generationsCount = 0;
+  updateGenerationsCount(0);
+  drawCells();
+})
 
 canvas.addEventListener("click", event => {
   const boundingRect = canvas.getBoundingClientRect();
@@ -263,8 +292,7 @@ function getIndex(row, column) {
 };
 
 function drawCells() {
-  const cellsPtr = universe.cells();
-  const cells = new Uint8Array(memory.buffer, cellsPtr, width * height);
+  const cells = importUniverse(universe, memory, width, height);
 
   ctx.beginPath();
 
@@ -272,7 +300,7 @@ function drawCells() {
   for (let row = 0; row < height; row++) {
     for (let col = 0; col < width; col++) {
       const idx = getIndex(row, col);
-      if (cells[idx] !== 1) {
+      if (checkCell(cells[idx])) {
         continue;
       }
 
@@ -289,7 +317,7 @@ function drawCells() {
   for (let row = 0; row < height; row++) {
     for (let col = 0; col < width; col++) {
       const idx = getIndex(row, col);
-      if (cells[idx] !== 0) {
+      if (!checkCell(cells[idx])) {
         continue;
       }
 
