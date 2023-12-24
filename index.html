@@ -99,6 +99,13 @@
         max-width: 75%;
         margin: 2px;
       }
+
+      img {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        opacity: 80%;
+      }
     </style>
   </head>
   <body>
@@ -130,11 +137,10 @@
         <button id="reset-universe-random" class="btn">Reset</button>
         <button id="reset-universe-dead" class="btn">Clear</button>
         <button id="next-frame" class="btn">Next generation</button>
-        <button id="switch-language" class="btn">Change language</button>
         <div>
           <label>Width</label>
           <select name="width" id="width" autocomplete="off">
-            <option value="100" selected>100</option>
+            <option value="100">100</option>
             <option value="200">200</option>
             <option value="300">300</option>
             <option value="400">400</option>
@@ -149,7 +155,7 @@
         <div>
           <label>Height</label>
           <select name="height" id="height" autocomplete="off">
-            <option value="100" selected>100</option>
+            <option value="100">100</option>
             <option value="200">200</option>
             <option value="300">300</option>
             <option value="400">400</option>
@@ -172,7 +178,7 @@
             <option value="6">6 px</option>
             <option value="7">7 px</option>
             <option value="8">8 px</option>
-            <option value="9" selected>9 px</option>
+            <option value="9">9 px</option>
             <option value="10">10 px</option>
           </select>
         </div>

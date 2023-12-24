@@ -3,33 +3,6 @@ import { importUniverseWasm, importUniverseJs } from "./importUniverse";
 import { createUniverseWasm, createUniverseJs } from "./createUniverse";
 import { checkCellWasm, checkCellJs } from "./checkCell";
 
-let language = 'WASM';
-let importUniverse = importUniverseWasm;
-let createUniverse = createUniverseWasm;
-let checkCell = checkCellWasm;
-
-const GRID_COLOR = "#CCCCCC";
-const DEAD_COLOR = "#FFFFFF";
-const ALIVE_COLOR = "#000000";
-
-const logoWasmPath = "https://upload.wikimedia.org/wikipedia/commons/1/1f/WebAssembly_Logo.svg";
-const logoJsPath = "https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png";
-
-let height = 100;
-let width = 100;
-let cellSize = 9; //px
-
-// Construct the universe, get its width and height.
-let universe = createUniverse(false, width, height);
-
-// Give the canvas room for all of our cells and a 1px border
-// around each of them.
-const canvas = document.getElementById("game-of-life-canvas");
-canvas.height = (cellSize + 1) * height + 1;
-canvas.width = (cellSize + 1) * width + 1;
-
-const ctx = canvas.getContext('2d');
-
 const playPauseButton = document.getElementById("play-pause");
 const ticksSlider = document.getElementById("ticks-frequency");
 const resetRandomButton = document.getElementById("reset-universe-random");
@@ -42,14 +15,50 @@ const cellSizeSelector = document.getElementById("cell-size");
 const panelButton = document.getElementById("panelBtn");
 const panel = document.getElementById("panel");
 const logo = document.querySelector("img");
-const changeLanguageButton = document.getElementById("switch-language");
+
+const GRID_COLOR = "#CCCCCC";
+const DEAD_COLOR = "#FFFFFF";
+const ALIVE_COLOR = "#000000";
+
+const logoWasmPath = "https://upload.wikimedia.org/wikipedia/commons/1/1f/WebAssembly_Logo.svg";
+const logoJsPath = "https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png";
+
+const query = new URLSearchParams(window.location.search);
+let language = query.get('lang');
+let height = query.get('height');
+let width = query.get('width');
+let cellSize = Number(query.get('cell_size')); //px
+
+language = language || 'WASM';
+height = height || 100;
+width = width || 100;
+cellSize = cellSize || 9;
+
+let importUniverse = language === 'JS' ? importUniverseJs : importUniverseWasm;
+let createUniverse = language === 'JS' ? createUniverseJs : createUniverseWasm;
+let checkCell = language === 'JS' ? checkCellJs : checkCellWasm;
+logo.setAttribute('src', language === "JS" ? logoJsPath : logoWasmPath);
+
+heightInput.value = height;
+widthInput.value = width;
+cellSizeSelector.value = cellSize;
+
+// Construct the universe, get its width and height.
+let universe = createUniverse(false, width, height);
+
+// Give the canvas room for all of our cells and a 1px border
+// around each of them.
+const canvas = document.getElementById("game-of-life-canvas");
+canvas.height = (cellSize + 1) * height + 1;
+canvas.width = (cellSize + 1) * width + 1;
+
+const ctx = canvas.getContext('2d');
 
 let animationId = null;
 let ticksFrequency = 1;
 let generationsCount = 0;
 console.time('1000th generation');
 
-logo.setAttribute('src', logoWasmPath)
 
 function updateGenerationsCount(step) {
   generationsCount += Number(step);
@@ -109,8 +118,17 @@ playPauseButton.addEventListener("click", event => {
   }
 });
 
+const changeQueryParams = (param, newValue) => {
+  const params = new URLSearchParams(window.location.search);
+  const current_url = new URL(window.location);
+  params.set(param, newValue);
+  current_url.search = params;
+  window.history.pushState(null, '', current_url);
+}
+
 heightInput.addEventListener("change", event => {
   height = Number(event.target.value);
+  changeQueryParams('height', height);
   universe = createUniverse(false, width, height);
   console.timeEnd('1000th generation');
   console.time('1000th generation');
@@ -122,6 +140,7 @@ heightInput.addEventListener("change", event => {
 
 widthInput.addEventListener("change", event => {
   width = Number(event.target.value);
+  changeQueryParams('width', width);
   universe = createUniverse(false, width, height);
   console.timeEnd('1000th generation');
   console.time('1000th generation');
@@ -134,6 +153,7 @@ widthInput.addEventListener("change", event => {
 
 cellSizeSelector.addEventListener("change", event => {
   cellSize = Number(event.target.value)
+  changeQueryParams('cell_size', cellSize);
   resizeCanvas();
   drawCells();
 })
@@ -147,8 +167,9 @@ function resizeCanvas() {
   canvas.width = (cellSize + 1) * width + 1;
 }
 
-changeLanguageButton.addEventListener('click', event => {
+logo.addEventListener('click', event => {
   language = language === 'WASM' ? 'JS' : 'WASM';
+  changeQueryParams('lang', language);
   importUniverse = language === 'JS' ? importUniverseJs : importUniverseWasm;
   createUniverse = language === 'JS' ? createUniverseJs : createUniverseWasm;
   checkCell = language === 'JS' ? checkCellJs : checkCellWasm;
