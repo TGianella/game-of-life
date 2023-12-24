@@ -3,6 +3,8 @@ import { importUniverseWasm, importUniverseJs } from "./importUniverse";
 import { createUniverseWasm, createUniverseJs } from "./createUniverse";
 import { checkCellWasm, checkCellJs } from "./checkCell";
 import { glider, pulsar } from "./patterns"
+import { changeQueryParams, resizeCanvas } from "./utils"
+import { fps } from "./fps";
 
 const playPauseButton = document.getElementById("play-pause");
 const ticksSlider = document.getElementById("ticks-frequency");
@@ -20,6 +22,11 @@ const logo = document.querySelector("img");
 const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
+
+const colors = [
+  [ALIVE_COLOR, true],
+  [DEAD_COLOR, false],
+];
 
 const logoWasmPath = "https://upload.wikimedia.org/wikipedia/commons/1/1f/WebAssembly_Logo.svg";
 const logoJsPath = "https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png";
@@ -66,6 +73,21 @@ function updateGenerationsCount(step) {
   generationsCounter.textContent = `Generation ${generationsCount}`
 }
 
+const resetTimer = () => {
+  console.timeEnd('1000th generation');
+  console.time('1000th generation');
+}
+
+const resetGenerationsCount = () => {
+  generationsCount = 0;
+  updateGenerationsCount(0);
+}
+
+const resetTimerAndGenerations = () => {
+  resetTimer();
+  resetGenerationsCount();
+}
+
 nextFrameButton.addEventListener("click", event => {
   if (isPaused()) {
     drawGrid();
@@ -77,10 +99,7 @@ nextFrameButton.addEventListener("click", event => {
 
 resetRandomButton.addEventListener("click", event => {
   universe = createUniverse(false, width, height);
-  console.timeEnd('1000th generation');
-  console.time('1000th generation');
-  generationsCount = 0;
-  updateGenerationsCount(0);
+  resetTimerAndGenerations();
   drawCells();
 })
 
@@ -89,10 +108,7 @@ resetBlankButton.addEventListener("click", event => {
     pause();
   }
   universe = createUniverse(true, width, height);
-  console.timeEnd('1000th generation');
-  console.time('1000th generation');
-  generationsCount = 0;
-  updateGenerationsCount(0);
+  resetTimerAndGenerations();
   drawCells();
 })
 
@@ -119,23 +135,13 @@ playPauseButton.addEventListener("click", event => {
   }
 });
 
-const changeQueryParams = (param, newValue) => {
-  const params = new URLSearchParams(window.location.search);
-  const current_url = new URL(window.location);
-  params.set(param, newValue);
-  current_url.search = params;
-  window.history.pushState(null, '', current_url);
-}
 
 heightInput.addEventListener("change", event => {
   height = Number(event.target.value);
   changeQueryParams('height', height);
   universe = createUniverse(false, width, height);
-  console.timeEnd('1000th generation');
-  console.time('1000th generation');
-  generationsCount = 0;
-  updateGenerationsCount(0);
-  resizeCanvas();
+  resetTimerAndGenerations();
+  resizeCanvas(canvas, height, width, cellSize);
   drawCells();
 })
 
@@ -143,29 +149,21 @@ widthInput.addEventListener("change", event => {
   width = Number(event.target.value);
   changeQueryParams('width', width);
   universe = createUniverse(false, width, height);
-  console.timeEnd('1000th generation');
-  console.time('1000th generation');
-  generationsCount = 0;
-  updateGenerationsCount(0);
-  resizeCanvas();
+  resetTimerAndGenerations();
+  resizeCanvas(canvas, height, width, cellSize);
   drawCells();
 })
 
 cellSizeSelector.addEventListener("change", event => {
   cellSize = Number(event.target.value)
   changeQueryParams('cell_size', cellSize);
-  resizeCanvas();
+  resizeCanvas(canvas, height, width, cellSize);
   drawCells();
 })
 
 panelButton.addEventListener('click', event => {
   panel.classList.toggle("open");
 })
-
-function resizeCanvas() {
-  canvas.height = (cellSize + 1) * height + 1;
-  canvas.width = (cellSize + 1) * width + 1;
-}
 
 logo.addEventListener('click', event => {
   language = language === 'WASM' ? 'JS' : 'WASM';
@@ -176,10 +174,7 @@ logo.addEventListener('click', event => {
   logo.setAttribute('src', language === "JS" ? logoJsPath : logoWasmPath);
 
   universe = createUniverse(false, width, height);
-  console.timeEnd('1000th generation');
-  console.time('1000th generation');
-  generationsCount = 0;
-  updateGenerationsCount(0);
+  resetTimerAndGenerations();
   drawCells();
 })
 
@@ -208,7 +203,7 @@ canvas.addEventListener("click", event => {
 });
 
 const drawPattern = (pattern, row, col) => {
-  for (const [deltaX, deltaY] of glider) {
+  for (const [deltaX, deltaY] of pattern) {
     universe.toggle_cell(row + deltaX, col + deltaY);
   }
 }
@@ -242,13 +237,13 @@ function drawGrid() {
   // Vertical lines.
   for (let i = 0; i <= width; i++) {
     ctx.moveTo(i * (cellSize + 1) + 1, 0);
-    ctx.moveTo(i * (cellSize + 1) + 1, (cellSize + 1) * height + 1);
+    ctx.lineTo(i * (cellSize + 1) + 1, (cellSize + 1) * height + 1);
   }
 
   // Vertical lines.
   for (let j = 0; j <= height; j++) {
     ctx.moveTo(0,                           j * (cellSize + 1) + 1);
-    ctx.moveTo((cellSize + 1) * width + 1, j * (cellSize + 1) + 1);
+    ctx.lineTo((cellSize + 1) * width + 1, j * (cellSize + 1) + 1);
   }
 
   ctx.stroke();
@@ -263,83 +258,31 @@ function drawCells() {
 
   ctx.beginPath();
 
-  ctx.fillStyle = ALIVE_COLOR;
-  for (let row = 0; row < height; row++) {
-    for (let col = 0; col < width; col++) {
-      const idx = getIndex(row, col);
-      if (checkCell(cells[idx])) {
-        continue;
-      }
-
-      ctx.fillRect(
-        col * (cellSize + 1) + 1,
-        row * (cellSize + 1) + 1,
-        cellSize,
-        cellSize
-      );
-    }
-  }
-
-  ctx.fillStyle = DEAD_COLOR;
-  for (let row = 0; row < height; row++) {
-    for (let col = 0; col < width; col++) {
-      const idx = getIndex(row, col);
-      if (!checkCell(cells[idx])) {
-        continue;
-      }
-
-      ctx.fillRect(
-        col * (cellSize + 1) + 1,
-        row * (cellSize + 1) + 1,
-        cellSize,
-        cellSize
-      );
-    }
-  }
+  for (const [color, continueCondition] of colors) {
+    ctx.fillStyle = color;
+    fillCells(cells, continueCondition);
+  } 
   
   ctx.stroke();
 }
 
-const fps = new class {
-  constructor() {
-    this.fps = document.getElementById("fps");
-    this.frames = [];
-    this.lastFrameTimeStamp = performance.now();
-  }
+const fillCells = (cells, state) => {
+  for (let row = 0; row < height; row++) {
+    for (let col = 0; col < width; col++) {
+      const idx = getIndex(row, col);
+      if (checkCell(cells[idx]) === state) {
+        continue;
+      }
 
-  render() {
-    const now = performance.now();
-    const delta = now - this.lastFrameTimeStamp;
-    this.lastFrameTimeStamp = now;
-    const fps = 1 / delta * 1000;
-
-    this.frames.push(fps);
-    if (this.frames.length > 100) {
-      this.frames.shift();
+      ctx.fillRect(
+        col * (cellSize + 1) + 1,
+        row * (cellSize + 1) + 1,
+        cellSize,
+        cellSize
+      );
     }
-
-    let min = Infinity;
-    let max = -Infinity;
-    let sum = 0;
-    for (let i = 0; i < this.frames.length; i++) {
-      sum += this.frames[i];
-      min = Math.min(this.frames[i], min);
-      max = Math.max(this.frames[i], max);
-    }
-
-    let mean = sum / this.frames.length;
-
-    this.fps.textContent = `
-Frames per Second:
-         latest = ${Math.round(fps)}
-avg of last 100 = ${Math.round(mean)}
-min of last 100 = ${Math.round(min)}
-max of last 100 = ${Math.round(max)}
-`.trim();
   }
-};
+}
 
-// drawGrid();
-// drawCells();
 play();
 
