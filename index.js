@@ -2,6 +2,7 @@ import { memory } from "wasm-game-of-life/wasm_game_of_life_bg";
 import { importUniverseWasm, importUniverseJs } from "./importUniverse";
 import { createUniverseWasm, createUniverseJs } from "./createUniverse";
 import { checkCellWasm, checkCellJs } from "./checkCell";
+import { glider, pulsar } from "./patterns"
 
 const playPauseButton = document.getElementById("play-pause");
 const ticksSlider = document.getElementById("ticks-frequency");
@@ -147,7 +148,6 @@ widthInput.addEventListener("change", event => {
   generationsCount = 0;
   updateGenerationsCount(0);
   resizeCanvas();
-  resizeCanvas();
   drawCells();
 })
 
@@ -198,74 +198,20 @@ canvas.addEventListener("click", event => {
   if (event.ctrlKey === false && event.shiftKey === false) {
     universe.toggle_cell(row, col);
   } else if (event.ctrlKey === true && event.shiftKey === false) {
-    universe.toggle_cell(row, col - 1);
-    universe.toggle_cell(row - 1, col);
-    universe.toggle_cell(row - 1, col + 1);
-    universe.toggle_cell(row, col + 1);
-    universe.toggle_cell(row + 1, col + 1);
+    drawPattern(glider, row, col);
   } else if (event.ctrlKey === false && event.shiftKey === true) {
-    universe.toggle_cell(row + 6, col - 4);
-    universe.toggle_cell(row + 6, col - 3);
-    universe.toggle_cell(row + 6, col - 2);
-    universe.toggle_cell(row + 6, col + 2);
-    universe.toggle_cell(row + 6, col + 3);
-    universe.toggle_cell(row + 6, col + 4);
-
-    universe.toggle_cell(row + 4, col - 6);
-    universe.toggle_cell(row + 4, col - 1);
-    universe.toggle_cell(row + 4, col + 1);
-    universe.toggle_cell(row + 4, col + 6);
-
-    universe.toggle_cell(row + 3, col - 6);
-    universe.toggle_cell(row + 3, col - 1);
-    universe.toggle_cell(row + 3, col + 1);
-    universe.toggle_cell(row + 3, col + 6);
-
-    universe.toggle_cell(row + 2, col - 6);
-    universe.toggle_cell(row + 2, col - 1);
-    universe.toggle_cell(row + 2, col + 1);
-    universe.toggle_cell(row + 2, col + 6);
-
-    universe.toggle_cell(row + 1, col - 4);
-    universe.toggle_cell(row + 1, col - 3);
-    universe.toggle_cell(row + 1, col - 2);
-    universe.toggle_cell(row + 1, col + 2);
-    universe.toggle_cell(row + 1, col + 3);
-    universe.toggle_cell(row + 1, col + 4);
-
-    universe.toggle_cell(row - 6, col - 4);
-    universe.toggle_cell(row - 6, col - 3);
-    universe.toggle_cell(row - 6, col - 2);
-    universe.toggle_cell(row - 6, col + 2);
-    universe.toggle_cell(row - 6, col + 3);
-    universe.toggle_cell(row - 6, col + 4);
-
-    universe.toggle_cell(row - 4, col - 6);
-    universe.toggle_cell(row - 4, col - 1);
-    universe.toggle_cell(row - 4, col + 1);
-    universe.toggle_cell(row - 4, col + 6);
-
-    universe.toggle_cell(row - 3, col - 6);
-    universe.toggle_cell(row - 3, col - 1);
-    universe.toggle_cell(row - 3, col + 1);
-    universe.toggle_cell(row - 3, col + 6);
-
-    universe.toggle_cell(row - 2, col - 6);
-    universe.toggle_cell(row - 2, col - 1);
-    universe.toggle_cell(row - 2, col + 1);
-    universe.toggle_cell(row - 2, col + 6);
-
-    universe.toggle_cell(row - 1, col - 4);
-    universe.toggle_cell(row - 1, col - 3);
-    universe.toggle_cell(row - 1, col - 2);
-    universe.toggle_cell(row - 1, col + 2);
-    universe.toggle_cell(row - 1, col + 3);
-    universe.toggle_cell(row - 1, col + 4);
+    drawPattern(pulsar, row, col);
   }
 
   drawGrid();
   drawCells();
 });
+
+const drawPattern = (pattern, row, col) => {
+  for (const [deltaX, deltaY] of glider) {
+    universe.toggle_cell(row + deltaX, col + deltaY);
+  }
+}
 
 function renderLoop() {
   fps.render();
