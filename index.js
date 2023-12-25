@@ -2,6 +2,7 @@ import { memory } from "wasm-game-of-life/wasm_game_of_life_bg";
 import { importUniverseWasm, importUniverseJs } from "./importUniverse";
 import { createUniverseWasm, createUniverseJs } from "./createUniverse";
 import { checkCellWasm, checkCellJs } from "./checkCell";
+import { compareUniverseWasm, compareUniverseJs, reassignUniverseWasm, reassignUniverseJs } from "./compareUniverse";
 import { glider, pulsar } from "./patterns"
 import { changeQueryParams, resizeCanvas } from "./utils"
 import { fps } from "./fps";
@@ -18,6 +19,11 @@ const cellSizeSelector = document.getElementById("cell-size");
 const panelButton = document.getElementById("panelBtn");
 const panel = document.getElementById("panel");
 const logo = document.querySelector("img");
+const loopBtn = document.getElementById("loop");
+const loopPanel = document.getElementById("loopPanel");
+const loopGenerationToggle = document.getElementById("loopGenerationToggle");
+const loopTimeToggle = document.getElementById("loopTimeToggle");
+const loopOnDeathToggle = document.getElementById("loopOnDeathToggle");
 
 const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
@@ -36,20 +42,43 @@ let language = query.get('lang');
 let height = query.get('height');
 let width = query.get('width');
 let cellSize = Number(query.get('cell_size')); //px
+let loop = query.get('loop');
+let loopAfterGenerationCount = query.get('loopGeneration');
+let loopAfterTime = query.get('loopTime');
+let loopIfDead = query.get('loopDeath');
 
 language = language || 'WASM';
 height = height || 100;
 width = width || 100;
 cellSize = cellSize || 9;
+loop = loop || false;
+loopAfterGenerationCount = loopAfterGenerationCount || false;
+loopAfterTime = loopAfterTime || false;
+loopIfDead = loopIfDead || false;
+let generationsLoopPoint = 5000;
+let timeLoopPoint = 60000;
+let startTime = performance.now();
+let timeElapsed;
+let pastUniverse = [];
+let generationsThreshold = 1000;
 
-let importUniverse = language === 'JS' ? importUniverseJs : importUniverseWasm;
-let createUniverse = language === 'JS' ? createUniverseJs : createUniverseWasm;
-let checkCell = language === 'JS' ? checkCellJs : checkCellWasm;
-logo.setAttribute('src', language === "JS" ? logoJsPath : logoWasmPath);
+const assignByLanguage = (wasmValue, jsValue) => language === 'JS' ? jsValue : wasmValue;
+
+let importUniverse = assignByLanguage(importUniverseWasm, importUniverseJs);
+let createUniverse = assignByLanguage(createUniverseWasm, createUniverseJs);
+let checkCell = assignByLanguage(checkCellWasm, checkCellJs);
+let compareUniverse = assignByLanguage(compareUniverseWasm, compareUniverseJs);
+let reassignUniverse = assignByLanguage(reassignUniverseWasm, reassignUniverseJs);
+logo.setAttribute('src', assignByLanguage(logoWasmPath, logoJsPath));
 
 heightInput.value = height;
 widthInput.value = width;
 cellSizeSelector.value = cellSize;
+
+loopBtn.textContent = loop ? "Disable loop" : "Enable loop";
+loopGenerationToggle.checked = loopAfterGenerationCount;
+loopTimeToggle.checked = loopAfterTime;
+loopOnDeathToggle.checked = loopIfDead;
 
 // Construct the universe, get its width and height.
 let universe = createUniverse(false, width, height);
@@ -68,9 +97,33 @@ let generationsCount = 0;
 console.time('1000th generation');
 
 
+
 function updateGenerationsCount(step) {
   generationsCount += Number(step);
   generationsCounter.textContent = `Generation ${generationsCount}`
+}
+
+const universeIsDead = () => {
+  if (generationsCount > generationsThreshold && generationsCount % 6 === 0) {
+    const presentUniverse = importUniverse(universe, memory, width, height);
+    if (compareUniverse(pastUniverse, presentUniverse)) {
+      return true;
+    } else {
+      pastUniverse = reassignUniverse(presentUniverse);
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
+const loopShouldReset = () => {
+  return (
+    loop && 
+    (loopAfterGenerationCount && generationsCount >= generationsLoopPoint) || 
+    (loopAfterTime && timeElapsed >= timeLoopPoint) ||
+    (loopIfDead && universeIsDead())
+  );
 }
 
 const resetTimer = () => {
@@ -168,14 +221,39 @@ panelButton.addEventListener('click', event => {
 logo.addEventListener('click', event => {
   language = language === 'WASM' ? 'JS' : 'WASM';
   changeQueryParams('lang', language);
-  importUniverse = language === 'JS' ? importUniverseJs : importUniverseWasm;
-  createUniverse = language === 'JS' ? createUniverseJs : createUniverseWasm;
-  checkCell = language === 'JS' ? checkCellJs : checkCellWasm;
-  logo.setAttribute('src', language === "JS" ? logoJsPath : logoWasmPath);
+  importUniverse = assignByLanguage(importUniverseWasm, importUniverseJs);
+  createUniverse = assignByLanguage(createUniverseWasm, createUniverseJs);
+  checkCell = assignByLanguage(checkCellWasm, checkCellJs);
+  compareUniverse = assignByLanguage(compareUniverseWasm, compareUniverseJs);
+  reassignUniverse = assignByLanguage(reassignUniverseWasm, reassignUniverseJs);
+  logo.setAttribute('src', assignByLanguage(logoWasmPath, logoJsPath));
+
 
   universe = createUniverse(false, width, height);
   resetTimerAndGenerations();
   drawCells();
+})
+
+loopBtn.addEventListener('click', event => {
+  loop = !loop;
+  changeQueryParams('loop', loop);
+  loopBtn.textContent = loop ? "Disable loop" : "Enable loop";
+  loopPanel.classList.toggle("hidden");
+})
+
+loopGenerationToggle.addEventListener('click', event => {
+  loopAfterGenerationCount = !loopAfterGenerationCount;
+  changeQueryParams('loopGeneration', loopAfterGenerationCount);
+})
+
+loopTimeToggle.addEventListener('click', event => {
+  loopAfterTime = !loopAfterTime;
+  changeQueryParams('loopTime', loopAfterTime);
+})
+
+loopOnDeathToggle.addEventListener('click', event => {
+  loopIfDead = !loopIfDead;
+  changeQueryParams('loopDeath', loopIfDead);
 })
 
 canvas.addEventListener("click", event => {
@@ -209,6 +287,15 @@ const drawPattern = (pattern, row, col) => {
 }
 
 function renderLoop() {
+  timeElapsed = performance.now() - startTime;
+
+  if (loopShouldReset()) {
+    universe = createUniverse(false, width, height);
+    startTime = performance.now();
+    resetTimerAndGenerations();
+    drawCells();
+  }
+
   fps.render();
   updateGenerationsCount(ticksFrequency);
 
@@ -283,6 +370,8 @@ const fillCells = (cells, state) => {
     }
   }
 }
+
+
 
 play();
 

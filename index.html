@@ -106,6 +106,10 @@
         left: 10px;
         opacity: 80%;
       }
+
+      .hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -137,6 +141,7 @@
         <button id="reset-universe-random" class="btn">Reset</button>
         <button id="reset-universe-dead" class="btn">Clear</button>
         <button id="next-frame" class="btn">Next generation</button>
+        <button id="loop" class="btn">Enable loop</button>
         <div>
           <label>Width</label>
           <select name="width" id="width" autocomplete="off">
@@ -181,6 +186,21 @@
             <option value="9">9 px</option>
             <option value="10">10 px</option>
           </select>
+        </div>
+      </div>
+      <div id="loopPanel">
+        <p>Loop:</p>
+        <div>
+          <input type="radio" id="loopGenerationToggle" />
+          <label>After n generations</label>
+        </div>
+        <div>
+          <input type="radio" id="loopTimeToggle" />
+          <label>After n seconds</label>
+        </div>
+        <div>
+          <input type="radio" id="loopOnDeathToggle" />
+          <label>If universe is dead</label>
         </div>
       </div>
       <div id="metrics" style="font-size: large; font-weight: bold" >
