@@ -17,9 +17,8 @@ export class Universe {
 * @param {boolean} blank
 * @param {number} width
 * @param {number} height
-* @returns {Universe}
 */
-  static new(blank: boolean, width: number, height: number): Universe;
+  constructor(blank: boolean, width: number, height: number);
 /**
 * @param {number} width
 */

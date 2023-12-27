@@ -110,6 +110,10 @@
       .hidden {
         display: none;
       }
+
+      #loopPanel {
+        margin-bottom: 10px;
+      }
     </style>
   </head>
   <body>
@@ -188,8 +192,8 @@
           </select>
         </div>
       </div>
-      <div id="loopPanel">
-        <p>Loop:</p>
+      <div id="loopPanel" class="hidden">
+        <span>Loop:</span>
         <div>
           <input type="radio" id="loopGenerationToggle" />
           <label>After n generations</label>

@@ -4,26 +4,30 @@ import { createUniverseWasm, createUniverseJs } from "./createUniverse";
 import { checkCellWasm, checkCellJs } from "./checkCell";
 import { compareUniverseWasm, compareUniverseJs, reassignUniverseWasm, reassignUniverseJs } from "./compareUniverse";
 import { glider, pulsar } from "./patterns"
-import { changeQueryParams, resizeCanvas } from "./utils"
+import { changeQueryParams, resizeCanvas } from "./utils";
 import { fps } from "./fps";
+import { defaultValues } from "./config";
+import { params } from "./paramsInit";
 
-const playPauseButton = document.getElementById("play-pause");
-const ticksSlider = document.getElementById("ticks-frequency");
-const resetRandomButton = document.getElementById("reset-universe-random");
-const resetBlankButton = document.getElementById("reset-universe-dead");
-const nextFrameButton = document.getElementById("next-frame");
-const generationsCounter = document.getElementById("generations-counter");
-const heightInput = document.getElementById("height");
-const widthInput = document.getElementById("width");
-const cellSizeSelector = document.getElementById("cell-size");
-const panelButton = document.getElementById("panelBtn");
-const panel = document.getElementById("panel");
-const logo = document.querySelector("img");
-const loopBtn = document.getElementById("loop");
-const loopPanel = document.getElementById("loopPanel");
-const loopGenerationToggle = document.getElementById("loopGenerationToggle");
-const loopTimeToggle = document.getElementById("loopTimeToggle");
-const loopOnDeathToggle = document.getElementById("loopOnDeathToggle");
+import {
+  playPauseButton,
+  ticksSlider,
+  resetRandomButton,
+  resetBlankButton,
+  nextFrameButton,
+  generationsCounter,
+  heightInput,
+  widthInput,
+  cellSizeSelector,
+  panelButton,
+  panel,
+  logo,
+  loopBtn,
+  loopPanel,
+  loopGenerationToggle,
+  loopTimeToggle,
+  loopOnDeathToggle
+} from "./documentSelectors";
 
 const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
@@ -37,30 +41,20 @@ const colors = [
 const logoWasmPath = "https://upload.wikimedia.org/wikipedia/commons/1/1f/WebAssembly_Logo.svg";
 const logoJsPath = "https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png";
 
-const query = new URLSearchParams(window.location.search);
-let language = query.get('lang');
-let height = query.get('height');
-let width = query.get('width');
-let cellSize = Number(query.get('cell_size')); //px
-let loop = query.get('loop');
-let loopAfterGenerationCount = query.get('loopGeneration');
-let loopAfterTime = query.get('loopTime');
-let loopIfDead = query.get('loopDeath');
-
-language = language || 'WASM';
-height = height || 100;
-width = width || 100;
-cellSize = cellSize || 9;
-loop = loop || false;
-loopAfterGenerationCount = loopAfterGenerationCount || false;
-loopAfterTime = loopAfterTime || false;
-loopIfDead = loopIfDead || false;
-let generationsLoopPoint = 5000;
-let timeLoopPoint = 60000;
+let language = params.language || defaultValues.language;
+let height = params.height || defaultValues.height;
+let width = params.width || defaultValues.width;
+let cellSize = params.cellSize || defaultValues.cellSize; //px
+let loop = params.loop || defaultValues.loop;
+let loopAfterGenerationCount = params.loopAfterGenerationCount || defaultValues.loopAfterGenerationCount;
+let loopAfterTime = params.loopAfterTime || defaultValues.loopAfterTime;
+let loopIfDead = params.loopIfDead || defaultValues.loopIfDead;
+let generationsLoopPoint = defaultValues.generationsLoopPoint;
+let timeLoopPoint = defaultValues.timeLoopPoint;
+let generationsThreshold = defaultValues.generationsThreshold;
 let startTime = performance.now();
 let timeElapsed;
 let pastUniverse = [];
-let generationsThreshold = 1000;
 
 const assignByLanguage = (wasmValue, jsValue) => language === 'JS' ? jsValue : wasmValue;
 
@@ -74,6 +68,10 @@ logo.setAttribute('src', assignByLanguage(logoWasmPath, logoJsPath));
 heightInput.value = height;
 widthInput.value = width;
 cellSizeSelector.value = cellSize;
+
+if (loop) {
+  loopPanel.classList.toggle('hidden');
+}
 
 loopBtn.textContent = loop ? "Disable loop" : "Enable loop";
 loopGenerationToggle.checked = loopAfterGenerationCount;
@@ -95,8 +93,6 @@ let animationId = null;
 let ticksFrequency = 1;
 let generationsCount = 0;
 console.time('1000th generation');
-
-
 
 function updateGenerationsCount(step) {
   generationsCount += Number(step);

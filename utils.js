@@ -11,3 +11,5 @@ export const resizeCanvas = (canvas, height, width, cellSize) => {
   canvas.height = (cellSize + 1) * height + 1;
   canvas.width = (cellSize + 1) * width + 1;
 }
+
+export const assignByLanguage = (language, wasmValue, jsValue) => language === 'JS' ? jsValue : wasmValue;
