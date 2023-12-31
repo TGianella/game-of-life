@@ -155,8 +155,9 @@ export class Universe {
     * @param {boolean} blank
     * @param {number} width
     * @param {number} height
+    * @returns {Universe}
     */
-    constructor(blank, width, height) {
+    static new(blank, width, height) {
         const ret = wasm.universe_new(blank, width, height);
         return Universe.__wrap(ret);
     }
