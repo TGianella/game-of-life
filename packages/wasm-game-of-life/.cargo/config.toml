@@ -1,0 +1,2 @@
+[alias]
+w = "watch -s 'wasm-pack build'"
