@@ -9,6 +9,8 @@
 
 A web app implementing the game of life, done in Rust + WebAssembly + Js, following [the community's guide](https://rustwasm.github.io/docs/book/game-of-life/introduction.html).
 
+In order to compare performances, the calculation is implemented both in pure JS and in Rust/Wasm, switch between the two by clicking the logo in the top-left !
+
 Play with it [here](https://tgianella.github.io/game-of-life/).
 
 ## Features
@@ -18,13 +20,14 @@ Play with it [here](https://tgianella.github.io/game-of-life/).
 * Slider to control the simulation speed.
 * Reset or clear the board.
 * Click to change a cell state, ctrl-click to create a glider, shift-clitk to create a pulsar
+* Modify the board size and cell size
+* Optionally resets the board after some time or when it is dead
 
 ## Features I'd like to implement
 
 ### Features
 * Select menu to select shape added on ctrl and maj-click
 * Rotate shapes
-* Select universe size
 * Go back in time (highly unrealistic right now !)
 
 ### Optimisation
