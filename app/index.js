@@ -1,8 +1,8 @@
 import { memory } from "wasm-game-of-life/wasm_game_of_life_bg";
-import { importUniverseWasm, importUniverseJs } from "./importUniverse";
-import { createUniverseWasm, createUniverseJs } from "./createUniverse";
-import { checkCellWasm, checkCellJs } from "./checkCell";
-import { compareUniverseWasm, compareUniverseJs, reassignUniverseWasm, reassignUniverseJs } from "./compareUniverse";
+import { importUniverseWasm, importUniverseJs } from "./lang/importUniverse";
+import { createUniverseWasm, createUniverseJs } from "./lang/createUniverse";
+import { checkCellWasm, checkCellJs } from "./lang/checkCell";
+import { compareUniverseWasm, compareUniverseJs, reassignUniverseWasm, reassignUniverseJs } from "./lang/compareUniverse";
 import { glider, pulsar } from "./patterns"
 import { changeQueryParams, resizeCanvas } from "./utils";
 import { fps } from "./fps";

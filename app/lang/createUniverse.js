@@ -1,5 +1,5 @@
 import { Universe as UniverseWasm } from "wasm-game-of-life";
-import { Universe as UniverseJs } from "./pkg/game-of-life.js";
+import { Universe as UniverseJs } from "js-game-of-life";
 
 export const createUniverseWasm = (blank, width, height) => UniverseWasm.new(blank, width, height);
 

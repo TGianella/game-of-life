@@ -5,9 +5,12 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  js-game-of-life:
+    specifier: file:./pkg/game-of-life-js
+    version: file:pkg/game-of-life-js
   wasm-game-of-life:
-    specifier: file:./pkg
-    version: file:pkg
+    specifier: file:./pkg/game-of-life-wasm
+    version: file:pkg/game-of-life-wasm
 
 devDependencies:
   copy-webpack-plugin:
@@ -3861,7 +3864,12 @@ packages:
       yargs-parser: 13.1.2
     dev: true
 
-  file:pkg:
-    resolution: {directory: pkg, type: directory}
+  file:pkg/game-of-life-js:
+    resolution: {directory: pkg/game-of-life-js, type: directory}
+    name: game-of-life-js
+    dev: false
+
+  file:pkg/game-of-life-wasm:
+    resolution: {directory: pkg/game-of-life-wasm, type: directory}
     name: wasm-game-of-life
     dev: false
