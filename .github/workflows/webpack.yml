@@ -45,6 +45,8 @@ jobs:
         key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
+    - name: Install wasm-pack
+      uses: jetli/wasm-pack-action@0.4.0
     - name: Build wasm package
       shell: bash
       run: wasm-pack build packages/wasm-game-of-life/
