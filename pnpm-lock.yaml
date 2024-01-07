@@ -6,11 +6,11 @@ settings:
 
 dependencies:
   js-game-of-life:
-    specifier: file:./packages/game-of-life-js
-    version: file:packages/game-of-life-js
+    specifier: file:./packages/js-game-of-life
+    version: file:packages/js-game-of-life
   wasm-game-of-life:
-    specifier: file:./packages/game-of-life-wasm
-    version: file:packages/game-of-life-wasm
+    specifier: file:./packages/wasm-game-of-life/pkg
+    version: file:packages/wasm-game-of-life/pkg
 
 devDependencies:
   copy-webpack-plugin:
@@ -3864,12 +3864,12 @@ packages:
       yargs-parser: 13.1.2
     dev: true
 
-  file:packages/game-of-life-js:
-    resolution: {directory: packages/game-of-life-js, type: directory}
+  file:packages/js-game-of-life:
+    resolution: {directory: packages/js-game-of-life, type: directory}
     name: js-game-of-life
     dev: false
 
-  file:packages/game-of-life-wasm:
-    resolution: {directory: packages/game-of-life-wasm, type: directory}
+  file:packages/wasm-game-of-life/pkg:
+    resolution: {directory: packages/wasm-game-of-life/pkg, type: directory}
     name: wasm-game-of-life
     dev: false
