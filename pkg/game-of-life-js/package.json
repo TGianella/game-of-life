@@ -1,0 +1,11 @@
+{
+  "name": "js-game-of-life",
+  "collaborators": [
+    "Theo <theo.gianella@proton.me>"
+  ],
+  "version": "0.1.0",
+  "files": [
+    "game-of-life.js"
+  ],
+  "module": "game-of-life.js"
+}
