@@ -46,7 +46,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
     - name: Install wasm-pack
-      uses: jetli/wasm-pack-action@0.4.0
+      run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
     - name: Build wasm package
       shell: bash
       run: wasm-pack build packages/wasm-game-of-life/
