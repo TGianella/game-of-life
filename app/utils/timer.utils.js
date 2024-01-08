@@ -1,4 +1,4 @@
-import {generationsCounter} from "./documentSelectors";
+import {generationsCounter} from "../documentSelectors";
 import {resetTimer} from "./utils";
 
 const increaseGenerationsCount = (generationsCount, step) => generationsCount + Number(step);

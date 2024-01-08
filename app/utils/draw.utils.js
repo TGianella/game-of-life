@@ -1,4 +1,4 @@
-import colors from "./colors.constants.json";
+import { colors } from "../config";
 
 const getIndex = (row, width, column) => {
     return row * width + column;

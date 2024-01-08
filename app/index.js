@@ -4,9 +4,9 @@ import { createUniverseWasm, createUniverseJs } from "./lang/createUniverse";
 import { checkCellWasm, checkCellJs } from "./lang/checkCell";
 import { compareUniverseWasm, compareUniverseJs, reassignUniverseWasm, reassignUniverseJs } from "./lang/compareUniverse";
 import { glider, pulsar } from "./patterns"
-import { assignByLanguage, changeQueryParams, drawPattern, resizeCanvas, isPaused } from "./utils";
-import { drawCells, drawGrid } from "./draw.utils";
-import { updateGenerationsCount, resetTimerAndGenerations } from "./timer.utils";
+import { assignByLanguage, changeQueryParams, drawPattern, resizeCanvas, isPaused } from "./utils/utils";
+import { drawCells, drawGrid } from "./utils/draw.utils";
+import { updateGenerationsCount, resetTimerAndGenerations } from "./utils/timer.utils";
 import { fps } from "./fps";
 import { defaultValues, logoUrls } from "./config";
 import { params } from "./paramsInit";
