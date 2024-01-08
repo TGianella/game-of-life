@@ -13,3 +13,8 @@ export const resizeCanvas = (canvas, height, width, cellSize) => {
 }
 
 export const assignByLanguage = (language, wasmValue, jsValue) => language === 'JS' ? jsValue : wasmValue;
+
+export const resetTimer = () => {
+  console.timeEnd('1000th generation');
+  console.time('1000th generation');
+}

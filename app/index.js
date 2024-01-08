@@ -5,6 +5,7 @@ import { checkCellWasm, checkCellJs } from "./lang/checkCell";
 import { compareUniverseWasm, compareUniverseJs, reassignUniverseWasm, reassignUniverseJs } from "./lang/compareUniverse";
 import { glider, pulsar } from "./patterns"
 import { changeQueryParams, resizeCanvas } from "./utils";
+import { updateGenerationsCount, resetTimerAndGenerations } from "./timer.utils";
 import { fps } from "./fps";
 import { defaultValues } from "./config";
 import { params } from "./paramsInit";
@@ -15,7 +16,6 @@ import {
   resetRandomButton,
   resetBlankButton,
   nextFrameButton,
-  generationsCounter,
   heightInput,
   widthInput,
   cellSizeSelector,
@@ -94,20 +94,6 @@ let ticksFrequency = 1;
 let generationsCount = 0;
 console.time('1000th generation');
 
-const updateGenerationsCount = (generationsCount, step) => {
-  const newGenerationsCount = increaseGenerationsCount(generationsCount, step);
-  displayGenerationsCount(generationsCounter, newGenerationsCount);
-
-  return newGenerationsCount;
-}
-
-const increaseGenerationsCount = (generationsCount, step) => generationsCount + Number(step);
-
-
-const displayGenerationsCount = (generationsCounter, generationsCount) => {
-  generationsCounter.textContent = `Generation ${generationsCount}`
-}
-
 const universeIsDead = () => {
   if (generationsCount > generationsThreshold && generationsCount % 6 === 0) {
     const presentUniverse = importUniverse(universe, memory, width, height);
@@ -131,20 +117,9 @@ const loopShouldReset = () => {
   );
 }
 
-const resetTimer = () => {
-  console.timeEnd('1000th generation');
-  console.time('1000th generation');
-}
 
-const resetGenerationsCount = () => {
-  generationsCount = 0;
-  displayGenerationsCount(generationsCounter, generationsCount);
-}
 
-const resetTimerAndGenerations = () => {
-  resetTimer();
-  resetGenerationsCount();
-}
+
 
 nextFrameButton.addEventListener("click", event => {
   if (isPaused()) {
@@ -157,7 +132,7 @@ nextFrameButton.addEventListener("click", event => {
 
 resetRandomButton.addEventListener("click", event => {
   universe = createUniverse(false, width, height);
-  resetTimerAndGenerations();
+  generationsCount = resetTimerAndGenerations();
   drawCells();
 })
 
@@ -166,7 +141,7 @@ resetBlankButton.addEventListener("click", event => {
     pause();
   }
   universe = createUniverse(true, width, height);
-  resetTimerAndGenerations();
+  generationsCount = resetTimerAndGenerations();
   drawCells();
 })
 
@@ -198,7 +173,7 @@ heightInput.addEventListener("change", event => {
   height = Number(event.target.value);
   changeQueryParams('height', height);
   universe = createUniverse(false, width, height);
-  resetTimerAndGenerations();
+  generationsCount = resetTimerAndGenerations();
   resizeCanvas(canvas, height, width, cellSize);
   drawCells();
 })
@@ -207,7 +182,7 @@ widthInput.addEventListener("change", event => {
   width = Number(event.target.value);
   changeQueryParams('width', width);
   universe = createUniverse(false, width, height);
-  resetTimerAndGenerations();
+  generationsCount = resetTimerAndGenerations();
   resizeCanvas(canvas, height, width, cellSize);
   drawCells();
 })
@@ -235,7 +210,7 @@ logo.addEventListener('click', event => {
 
 
   universe = createUniverse(false, width, height);
-  resetTimerAndGenerations();
+  generationsCount = resetTimerAndGenerations();
   drawCells();
 })
 
@@ -297,7 +272,7 @@ function renderLoop() {
   if (loopShouldReset()) {
     universe = createUniverse(false, width, height);
     startTime = performance.now();
-    resetTimerAndGenerations();
+    generationsCount = resetTimerAndGenerations();
     drawCells();
   }
 
