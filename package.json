@@ -9,6 +9,7 @@
   "scripts": {
     "build:web": "webpack --config webpack.config.js",
     "build:wasm": "wasm-pack build packages/wasm-game-of-life/",
+    "watch:wasm": "cd packages/wasm-game-of-life && cargo watch -s 'wasm-pack build'",
     "start": "webpack-dev-server"
   },
   "repository": {
