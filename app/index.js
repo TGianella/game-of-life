@@ -94,8 +94,17 @@ let ticksFrequency = 1;
 let generationsCount = 0;
 console.time('1000th generation');
 
-function updateGenerationsCount(step) {
-  generationsCount += Number(step);
+const updateGenerationsCount = (generationsCount, step) => {
+  const newGenerationsCount = increaseGenerationsCount(generationsCount, step);
+  displayGenerationsCount(generationsCounter, newGenerationsCount);
+
+  return newGenerationsCount;
+}
+
+const increaseGenerationsCount = (generationsCount, step) => generationsCount + Number(step);
+
+
+const displayGenerationsCount = (generationsCounter, generationsCount) => {
   generationsCounter.textContent = `Generation ${generationsCount}`
 }
 
@@ -129,7 +138,7 @@ const resetTimer = () => {
 
 const resetGenerationsCount = () => {
   generationsCount = 0;
-  updateGenerationsCount(0);
+  displayGenerationsCount(generationsCounter, generationsCount);
 }
 
 const resetTimerAndGenerations = () => {
@@ -142,7 +151,7 @@ nextFrameButton.addEventListener("click", event => {
     drawGrid();
     drawCells();
     universe.tick();
-    updateGenerationsCount(1);
+    generationsCount = updateGenerationsCount(generationsCount,1);
   }
 })
 
@@ -293,7 +302,7 @@ function renderLoop() {
   }
 
   fps.render();
-  updateGenerationsCount(ticksFrequency);
+  generationsCount = updateGenerationsCount(generationsCount, ticksFrequency);
 
   drawGrid();
   drawCells();
