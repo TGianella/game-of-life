@@ -4,7 +4,7 @@ import { createUniverseWasm, createUniverseJs } from "./lang/createUniverse";
 import { checkCellWasm, checkCellJs } from "./lang/checkCell";
 import { compareUniverseWasm, compareUniverseJs, reassignUniverseWasm, reassignUniverseJs } from "./lang/compareUniverse";
 import { glider, pulsar } from "./patterns"
-import { assignByLanguage, changeQueryParams, resizeCanvas } from "./utils";
+import { assignByLanguage, changeQueryParams, drawPattern, resizeCanvas } from "./utils";
 import { updateGenerationsCount, resetTimerAndGenerations } from "./timer.utils";
 import { fps } from "./fps";
 import { defaultValues } from "./config";
@@ -115,18 +115,16 @@ const loopShouldReset = () => {
   );
 }
 
-
-
-
-
-nextFrameButton.addEventListener("click", event => {
+const nextFrame = () => {
   if (isPaused()) {
     drawGrid();
     drawCells();
     universe.tick();
     generationsCount = updateGenerationsCount(generationsCount,1);
   }
-})
+}
+
+nextFrameButton.addEventListener("click", (event) => nextFrame());
 
 resetRandomButton.addEventListener("click", event => {
   universe = createUniverse(false, width, height);
@@ -166,31 +164,34 @@ playPauseButton.addEventListener("click", event => {
   }
 });
 
-
-heightInput.addEventListener("change", event => {
-  height = Number(event.target.value);
-  changeQueryParams('height', height);
-  universe = createUniverse(false, width, height);
-  generationsCount = resetTimerAndGenerations();
+const modifyBoard = (label, value, resize) => {
+  switch (label) {
+    case 'height':
+      height = value;
+      break;
+    case 'width':
+      width = value;
+      break;
+    case 'cellSize':
+      cellSize = Number(value);
+      break;
+  }
+  changeQueryParams(label, value)
   resizeCanvas(canvas, height, width, cellSize);
-  drawCells();
-})
 
-widthInput.addEventListener("change", event => {
-  width = Number(event.target.value);
-  changeQueryParams('width', width);
-  universe = createUniverse(false, width, height);
-  generationsCount = resetTimerAndGenerations();
-  resizeCanvas(canvas, height, width, cellSize);
-  drawCells();
-})
+  if (resize) {
+    universe = createUniverse(false, width, height);
+    generationsCount = resetTimerAndGenerations();
+  }
 
-cellSizeSelector.addEventListener("change", event => {
-  cellSize = Number(event.target.value)
-  changeQueryParams('cell_size', cellSize);
-  resizeCanvas(canvas, height, width, cellSize);
   drawCells();
-})
+}
+
+heightInput.addEventListener("change", event => modifyBoard('height', event.target.value, true))
+
+widthInput.addEventListener("change", event => modifyBoard('width', event.target.value, true))
+
+cellSizeSelector.addEventListener("change", event => modifyBoard('cellSize', event.target.value, false))
 
 panelButton.addEventListener('click', event => {
   panel.classList.toggle("open");
@@ -249,20 +250,14 @@ canvas.addEventListener("click", event => {
   if (event.ctrlKey === false && event.shiftKey === false) {
     universe.toggle_cell(row, col);
   } else if (event.ctrlKey === true && event.shiftKey === false) {
-    drawPattern(glider, row, col);
+    drawPattern(universe, glider, row, col);
   } else if (event.ctrlKey === false && event.shiftKey === true) {
-    drawPattern(pulsar, row, col);
+    drawPattern(universe, pulsar, row, col);
   }
 
   drawGrid();
   drawCells();
 });
-
-const drawPattern = (pattern, row, col) => {
-  for (const [deltaX, deltaY] of pattern) {
-    universe.toggle_cell(row + deltaX, col + deltaY);
-  }
-}
 
 function renderLoop() {
   timeElapsed = performance.now() - startTime;
@@ -349,7 +344,4 @@ const fillCells = (cells, state) => {
   }
 }
 
-
-
 play();
-

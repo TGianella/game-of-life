@@ -18,3 +18,9 @@ export const resetTimer = () => {
   console.timeEnd('1000th generation');
   console.time('1000th generation');
 }
+
+export const drawPattern = (universe, pattern, row, col) => {
+  for (const [deltaX, deltaY] of pattern) {
+    universe.toggle_cell(row + deltaX, col + deltaY);
+  }
+}
