@@ -4,18 +4,18 @@ import { createUniverseWasm, createUniverseJs } from "./lang/createUniverse";
 import { checkCellWasm, checkCellJs } from "./lang/checkCell";
 import { compareUniverseWasm, compareUniverseJs, reassignUniverseWasm, reassignUniverseJs } from "./lang/compareUniverse";
 import { glider, pulsar } from "./patterns"
-import { changeQueryParams, resizeCanvas } from "./utils";
+import { assignByLanguage, changeQueryParams, drawPattern, resizeCanvas, isPaused } from "./utils/utils";
+import { drawCells, drawGrid } from "./utils/draw.utils";
+import { updateGenerationsCount, resetTimerAndGenerations } from "./utils/timer.utils";
 import { fps } from "./fps";
-import { defaultValues } from "./config";
+import { defaultValues, logoUrls } from "./config";
 import { params } from "./paramsInit";
-
 import {
   playPauseButton,
   ticksSlider,
   resetRandomButton,
   resetBlankButton,
   nextFrameButton,
-  generationsCounter,
   heightInput,
   widthInput,
   cellSizeSelector,
@@ -28,18 +28,6 @@ import {
   loopTimeToggle,
   loopOnDeathToggle
 } from "./documentSelectors";
-
-const GRID_COLOR = "#CCCCCC";
-const DEAD_COLOR = "#FFFFFF";
-const ALIVE_COLOR = "#000000";
-
-const colors = [
-  [ALIVE_COLOR, true],
-  [DEAD_COLOR, false],
-];
-
-const logoWasmPath = "https://upload.wikimedia.org/wikipedia/commons/1/1f/WebAssembly_Logo.svg";
-const logoJsPath = "https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png";
 
 let language = params.language || defaultValues.language;
 let height = params.height || defaultValues.height;
@@ -56,14 +44,12 @@ let startTime = performance.now();
 let timeElapsed;
 let pastUniverse = [];
 
-const assignByLanguage = (wasmValue, jsValue) => language === 'JS' ? jsValue : wasmValue;
-
-let importUniverse = assignByLanguage(importUniverseWasm, importUniverseJs);
-let createUniverse = assignByLanguage(createUniverseWasm, createUniverseJs);
-let checkCell = assignByLanguage(checkCellWasm, checkCellJs);
-let compareUniverse = assignByLanguage(compareUniverseWasm, compareUniverseJs);
-let reassignUniverse = assignByLanguage(reassignUniverseWasm, reassignUniverseJs);
-logo.setAttribute('src', assignByLanguage(logoWasmPath, logoJsPath));
+let importUniverse = assignByLanguage(language, importUniverseWasm, importUniverseJs);
+let createUniverse = assignByLanguage(language, createUniverseWasm, createUniverseJs);
+let checkCell = assignByLanguage(language, checkCellWasm, checkCellJs);
+let compareUniverse = assignByLanguage(language, compareUniverseWasm, compareUniverseJs);
+let reassignUniverse = assignByLanguage(language, reassignUniverseWasm, reassignUniverseJs);
+logo.setAttribute('src', assignByLanguage(language, logoUrls.wasm, logoUrls.js));
 
 heightInput.value = height;
 widthInput.value = width;
@@ -94,11 +80,6 @@ let ticksFrequency = 1;
 let generationsCount = 0;
 console.time('1000th generation');
 
-function updateGenerationsCount(step) {
-  generationsCount += Number(step);
-  generationsCounter.textContent = `Generation ${generationsCount}`
-}
-
 const universeIsDead = () => {
   if (generationsCount > generationsThreshold && generationsCount % 6 === 0) {
     const presentUniverse = importUniverse(universe, memory, width, height);
@@ -122,43 +103,30 @@ const loopShouldReset = () => {
   );
 }
 
-const resetTimer = () => {
-  console.timeEnd('1000th generation');
-  console.time('1000th generation');
-}
-
-const resetGenerationsCount = () => {
-  generationsCount = 0;
-  updateGenerationsCount(0);
-}
-
-const resetTimerAndGenerations = () => {
-  resetTimer();
-  resetGenerationsCount();
-}
-
-nextFrameButton.addEventListener("click", event => {
-  if (isPaused()) {
-    drawGrid();
-    drawCells();
+const nextFrame = () => {
+  if (isPaused(animationId)) {
+    drawGrid(ctx, width, cellSize, height);
+    drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
     universe.tick();
-    updateGenerationsCount(1);
+    generationsCount = updateGenerationsCount(generationsCount,1);
   }
-})
+}
+
+nextFrameButton.addEventListener("click", (event) => nextFrame());
 
 resetRandomButton.addEventListener("click", event => {
   universe = createUniverse(false, width, height);
-  resetTimerAndGenerations();
-  drawCells();
+  generationsCount = resetTimerAndGenerations();
+  drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
 })
 
 resetBlankButton.addEventListener("click", event => {
-  if (!isPaused()) {
+  if (!isPaused(animationId)) {
     pause();
   }
   universe = createUniverse(true, width, height);
-  resetTimerAndGenerations();
-  drawCells();
+  generationsCount = resetTimerAndGenerations();
+  drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
 })
 
 ticksSlider.addEventListener("change", event => {
@@ -177,38 +145,41 @@ function pause() {
 }
 
 playPauseButton.addEventListener("click", event => {
-  if (isPaused()) {
+  if (isPaused(animationId)) {
     play();
   } else {
     pause();
   }
 });
 
-
-heightInput.addEventListener("change", event => {
-  height = Number(event.target.value);
-  changeQueryParams('height', height);
-  universe = createUniverse(false, width, height);
-  resetTimerAndGenerations();
+const modifyBoard = (label, value, resize) => {
+  switch (label) {
+    case 'height':
+      height = value;
+      break;
+    case 'width':
+      width = value;
+      break;
+    case 'cellSize':
+      cellSize = Number(value);
+      break;
+  }
+  changeQueryParams(label, value)
   resizeCanvas(canvas, height, width, cellSize);
-  drawCells();
-})
 
-widthInput.addEventListener("change", event => {
-  width = Number(event.target.value);
-  changeQueryParams('width', width);
-  universe = createUniverse(false, width, height);
-  resetTimerAndGenerations();
-  resizeCanvas(canvas, height, width, cellSize);
-  drawCells();
-})
+  if (resize) {
+    universe = createUniverse(false, width, height);
+    generationsCount = resetTimerAndGenerations();
+  }
 
-cellSizeSelector.addEventListener("change", event => {
-  cellSize = Number(event.target.value)
-  changeQueryParams('cell_size', cellSize);
-  resizeCanvas(canvas, height, width, cellSize);
-  drawCells();
-})
+  drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
+}
+
+heightInput.addEventListener("change", event => modifyBoard('height', event.target.value, true))
+
+widthInput.addEventListener("change", event => modifyBoard('width', event.target.value, true))
+
+cellSizeSelector.addEventListener("change", event => modifyBoard('cellSize', event.target.value, false))
 
 panelButton.addEventListener('click', event => {
   panel.classList.toggle("open");
@@ -217,17 +188,17 @@ panelButton.addEventListener('click', event => {
 logo.addEventListener('click', event => {
   language = language === 'WASM' ? 'JS' : 'WASM';
   changeQueryParams('lang', language);
-  importUniverse = assignByLanguage(importUniverseWasm, importUniverseJs);
-  createUniverse = assignByLanguage(createUniverseWasm, createUniverseJs);
-  checkCell = assignByLanguage(checkCellWasm, checkCellJs);
-  compareUniverse = assignByLanguage(compareUniverseWasm, compareUniverseJs);
-  reassignUniverse = assignByLanguage(reassignUniverseWasm, reassignUniverseJs);
-  logo.setAttribute('src', assignByLanguage(logoWasmPath, logoJsPath));
+  importUniverse = assignByLanguage(language, importUniverseWasm, importUniverseJs);
+  createUniverse = assignByLanguage(language, createUniverseWasm, createUniverseJs);
+  checkCell = assignByLanguage(language, checkCellWasm, checkCellJs);
+  compareUniverse = assignByLanguage(language, compareUniverseWasm, compareUniverseJs);
+  reassignUniverse = assignByLanguage(language, reassignUniverseWasm, reassignUniverseJs);
+  logo.setAttribute('src', assignByLanguage(language, logoUrls.wasm, logoUrls.js));
 
 
   universe = createUniverse(false, width, height);
-  resetTimerAndGenerations();
-  drawCells();
+  generationsCount = resetTimerAndGenerations();
+  drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
 })
 
 loopBtn.addEventListener('click', event => {
@@ -267,20 +238,14 @@ canvas.addEventListener("click", event => {
   if (event.ctrlKey === false && event.shiftKey === false) {
     universe.toggle_cell(row, col);
   } else if (event.ctrlKey === true && event.shiftKey === false) {
-    drawPattern(glider, row, col);
+    drawPattern(universe, glider, row, col);
   } else if (event.ctrlKey === false && event.shiftKey === true) {
-    drawPattern(pulsar, row, col);
+    drawPattern(universe, pulsar, row, col);
   }
 
-  drawGrid();
-  drawCells();
+  drawGrid(ctx, width, cellSize, height);
+  drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
 });
-
-const drawPattern = (pattern, row, col) => {
-  for (const [deltaX, deltaY] of pattern) {
-    universe.toggle_cell(row + deltaX, col + deltaY);
-  }
-}
 
 function renderLoop() {
   timeElapsed = performance.now() - startTime;
@@ -288,15 +253,15 @@ function renderLoop() {
   if (loopShouldReset()) {
     universe = createUniverse(false, width, height);
     startTime = performance.now();
-    resetTimerAndGenerations();
-    drawCells();
+    generationsCount = resetTimerAndGenerations();
+    drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
   }
 
   fps.render();
-  updateGenerationsCount(ticksFrequency);
+  generationsCount = updateGenerationsCount(generationsCount, ticksFrequency);
 
-  drawGrid();
-  drawCells();
+  drawGrid(ctx, width, cellSize, height);
+  drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
 
   for (let i = 0; i < ticksFrequency; i++) {
     universe.tick();
@@ -309,65 +274,4 @@ function renderLoop() {
   animationId = requestAnimationFrame(renderLoop);
 }
 
-function isPaused() {
-  return animationId === null;
-};
-
-function drawGrid() {
-  ctx.beginPath();
-  ctx.strokeStyle = GRID_COLOR;
-
-  // Vertical lines.
-  for (let i = 0; i <= width; i++) {
-    ctx.moveTo(i * (cellSize + 1) + 1, 0);
-    ctx.lineTo(i * (cellSize + 1) + 1, (cellSize + 1) * height + 1);
-  }
-
-  // Vertical lines.
-  for (let j = 0; j <= height; j++) {
-    ctx.moveTo(0,                           j * (cellSize + 1) + 1);
-    ctx.lineTo((cellSize + 1) * width + 1, j * (cellSize + 1) + 1);
-  }
-
-  ctx.stroke();
-}
-
-function getIndex(row, column) {
-  return row * width + column;
-};
-
-function drawCells() {
-  const cells = importUniverse(universe, memory, width, height);
-
-  ctx.beginPath();
-
-  for (const [color, continueCondition] of colors) {
-    ctx.fillStyle = color;
-    fillCells(cells, continueCondition);
-  } 
-  
-  ctx.stroke();
-}
-
-const fillCells = (cells, state) => {
-  for (let row = 0; row < height; row++) {
-    for (let col = 0; col < width; col++) {
-      const idx = getIndex(row, col);
-      if (checkCell(cells[idx]) === state) {
-        continue;
-      }
-
-      ctx.fillRect(
-        col * (cellSize + 1) + 1,
-        row * (cellSize + 1) + 1,
-        cellSize,
-        cellSize
-      );
-    }
-  }
-}
-
-
-
 play();
-
