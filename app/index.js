@@ -4,7 +4,7 @@ import { createUniverseWasm, createUniverseJs } from "./lang/createUniverse";
 import { checkCellWasm, checkCellJs } from "./lang/checkCell";
 import { compareUniverseWasm, compareUniverseJs, reassignUniverseWasm, reassignUniverseJs } from "./lang/compareUniverse";
 import { glider, pulsar } from "./patterns"
-import { changeQueryParams, resizeCanvas } from "./utils";
+import { assignByLanguage, changeQueryParams, resizeCanvas } from "./utils";
 import { updateGenerationsCount, resetTimerAndGenerations } from "./timer.utils";
 import { fps } from "./fps";
 import { defaultValues } from "./config";
@@ -56,14 +56,12 @@ let startTime = performance.now();
 let timeElapsed;
 let pastUniverse = [];
 
-const assignByLanguage = (wasmValue, jsValue) => language === 'JS' ? jsValue : wasmValue;
-
-let importUniverse = assignByLanguage(importUniverseWasm, importUniverseJs);
-let createUniverse = assignByLanguage(createUniverseWasm, createUniverseJs);
-let checkCell = assignByLanguage(checkCellWasm, checkCellJs);
-let compareUniverse = assignByLanguage(compareUniverseWasm, compareUniverseJs);
-let reassignUniverse = assignByLanguage(reassignUniverseWasm, reassignUniverseJs);
-logo.setAttribute('src', assignByLanguage(logoWasmPath, logoJsPath));
+let importUniverse = assignByLanguage(language, importUniverseWasm, importUniverseJs);
+let createUniverse = assignByLanguage(language, createUniverseWasm, createUniverseJs);
+let checkCell = assignByLanguage(language, checkCellWasm, checkCellJs);
+let compareUniverse = assignByLanguage(language, compareUniverseWasm, compareUniverseJs);
+let reassignUniverse = assignByLanguage(language, reassignUniverseWasm, reassignUniverseJs);
+logo.setAttribute('src', assignByLanguage(language, logoWasmPath, logoJsPath));
 
 heightInput.value = height;
 widthInput.value = width;
@@ -201,12 +199,12 @@ panelButton.addEventListener('click', event => {
 logo.addEventListener('click', event => {
   language = language === 'WASM' ? 'JS' : 'WASM';
   changeQueryParams('lang', language);
-  importUniverse = assignByLanguage(importUniverseWasm, importUniverseJs);
-  createUniverse = assignByLanguage(createUniverseWasm, createUniverseJs);
-  checkCell = assignByLanguage(checkCellWasm, checkCellJs);
-  compareUniverse = assignByLanguage(compareUniverseWasm, compareUniverseJs);
-  reassignUniverse = assignByLanguage(reassignUniverseWasm, reassignUniverseJs);
-  logo.setAttribute('src', assignByLanguage(logoWasmPath, logoJsPath));
+  importUniverse = assignByLanguage(language, importUniverseWasm, importUniverseJs);
+  createUniverse = assignByLanguage(language, createUniverseWasm, createUniverseJs);
+  checkCell = assignByLanguage(language, checkCellWasm, checkCellJs);
+  compareUniverse = assignByLanguage(language, compareUniverseWasm, compareUniverseJs);
+  reassignUniverse = assignByLanguage(language, reassignUniverseWasm, reassignUniverseJs);
+  logo.setAttribute('src', assignByLanguage(language, logoWasmPath, logoJsPath));
 
 
   universe = createUniverse(false, width, height);
