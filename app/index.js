@@ -4,12 +4,12 @@ import { createUniverseWasm, createUniverseJs } from "./lang/createUniverse";
 import { checkCellWasm, checkCellJs } from "./lang/checkCell";
 import { compareUniverseWasm, compareUniverseJs, reassignUniverseWasm, reassignUniverseJs } from "./lang/compareUniverse";
 import { glider, pulsar } from "./patterns"
-import { assignByLanguage, changeQueryParams, drawPattern, resizeCanvas } from "./utils";
+import { assignByLanguage, changeQueryParams, drawPattern, resizeCanvas, isPaused } from "./utils";
+import { drawCells, drawGrid } from "./draw.utils";
 import { updateGenerationsCount, resetTimerAndGenerations } from "./timer.utils";
 import { fps } from "./fps";
-import { defaultValues } from "./config";
+import { defaultValues, logoUrls } from "./config";
 import { params } from "./paramsInit";
-
 import {
   playPauseButton,
   ticksSlider,
@@ -28,18 +28,6 @@ import {
   loopTimeToggle,
   loopOnDeathToggle
 } from "./documentSelectors";
-
-const GRID_COLOR = "#CCCCCC";
-const DEAD_COLOR = "#FFFFFF";
-const ALIVE_COLOR = "#000000";
-
-const colors = [
-  [ALIVE_COLOR, true],
-  [DEAD_COLOR, false],
-];
-
-const logoWasmPath = "https://upload.wikimedia.org/wikipedia/commons/1/1f/WebAssembly_Logo.svg";
-const logoJsPath = "https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png";
 
 let language = params.language || defaultValues.language;
 let height = params.height || defaultValues.height;
@@ -61,7 +49,7 @@ let createUniverse = assignByLanguage(language, createUniverseWasm, createUniver
 let checkCell = assignByLanguage(language, checkCellWasm, checkCellJs);
 let compareUniverse = assignByLanguage(language, compareUniverseWasm, compareUniverseJs);
 let reassignUniverse = assignByLanguage(language, reassignUniverseWasm, reassignUniverseJs);
-logo.setAttribute('src', assignByLanguage(language, logoWasmPath, logoJsPath));
+logo.setAttribute('src', assignByLanguage(language, logoUrls.wasm, logoUrls.js));
 
 heightInput.value = height;
 widthInput.value = width;
@@ -116,9 +104,9 @@ const loopShouldReset = () => {
 }
 
 const nextFrame = () => {
-  if (isPaused()) {
-    drawGrid();
-    drawCells();
+  if (isPaused(animationId)) {
+    drawGrid(ctx, width, cellSize, height);
+    drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
     universe.tick();
     generationsCount = updateGenerationsCount(generationsCount,1);
   }
@@ -129,16 +117,16 @@ nextFrameButton.addEventListener("click", (event) => nextFrame());
 resetRandomButton.addEventListener("click", event => {
   universe = createUniverse(false, width, height);
   generationsCount = resetTimerAndGenerations();
-  drawCells();
+  drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
 })
 
 resetBlankButton.addEventListener("click", event => {
-  if (!isPaused()) {
+  if (!isPaused(animationId)) {
     pause();
   }
   universe = createUniverse(true, width, height);
   generationsCount = resetTimerAndGenerations();
-  drawCells();
+  drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
 })
 
 ticksSlider.addEventListener("change", event => {
@@ -157,7 +145,7 @@ function pause() {
 }
 
 playPauseButton.addEventListener("click", event => {
-  if (isPaused()) {
+  if (isPaused(animationId)) {
     play();
   } else {
     pause();
@@ -184,7 +172,7 @@ const modifyBoard = (label, value, resize) => {
     generationsCount = resetTimerAndGenerations();
   }
 
-  drawCells();
+  drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
 }
 
 heightInput.addEventListener("change", event => modifyBoard('height', event.target.value, true))
@@ -205,12 +193,12 @@ logo.addEventListener('click', event => {
   checkCell = assignByLanguage(language, checkCellWasm, checkCellJs);
   compareUniverse = assignByLanguage(language, compareUniverseWasm, compareUniverseJs);
   reassignUniverse = assignByLanguage(language, reassignUniverseWasm, reassignUniverseJs);
-  logo.setAttribute('src', assignByLanguage(language, logoWasmPath, logoJsPath));
+  logo.setAttribute('src', assignByLanguage(language, logoUrls.wasm, logoUrls.js));
 
 
   universe = createUniverse(false, width, height);
   generationsCount = resetTimerAndGenerations();
-  drawCells();
+  drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
 })
 
 loopBtn.addEventListener('click', event => {
@@ -255,8 +243,8 @@ canvas.addEventListener("click", event => {
     drawPattern(universe, pulsar, row, col);
   }
 
-  drawGrid();
-  drawCells();
+  drawGrid(ctx, width, cellSize, height);
+  drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
 });
 
 function renderLoop() {
@@ -266,14 +254,14 @@ function renderLoop() {
     universe = createUniverse(false, width, height);
     startTime = performance.now();
     generationsCount = resetTimerAndGenerations();
-    drawCells();
+    drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
   }
 
   fps.render();
   generationsCount = updateGenerationsCount(generationsCount, ticksFrequency);
 
-  drawGrid();
-  drawCells();
+  drawGrid(ctx, width, cellSize, height);
+  drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
 
   for (let i = 0; i < ticksFrequency; i++) {
     universe.tick();
@@ -284,64 +272,6 @@ function renderLoop() {
   }
 
   animationId = requestAnimationFrame(renderLoop);
-}
-
-function isPaused() {
-  return animationId === null;
-};
-
-function drawGrid() {
-  ctx.beginPath();
-  ctx.strokeStyle = GRID_COLOR;
-
-  // Vertical lines.
-  for (let i = 0; i <= width; i++) {
-    ctx.moveTo(i * (cellSize + 1) + 1, 0);
-    ctx.lineTo(i * (cellSize + 1) + 1, (cellSize + 1) * height + 1);
-  }
-
-  // Vertical lines.
-  for (let j = 0; j <= height; j++) {
-    ctx.moveTo(0,                           j * (cellSize + 1) + 1);
-    ctx.lineTo((cellSize + 1) * width + 1, j * (cellSize + 1) + 1);
-  }
-
-  ctx.stroke();
-}
-
-function getIndex(row, column) {
-  return row * width + column;
-};
-
-function drawCells() {
-  const cells = importUniverse(universe, memory, width, height);
-
-  ctx.beginPath();
-
-  for (const [color, continueCondition] of colors) {
-    ctx.fillStyle = color;
-    fillCells(cells, continueCondition);
-  } 
-  
-  ctx.stroke();
-}
-
-const fillCells = (cells, state) => {
-  for (let row = 0; row < height; row++) {
-    for (let col = 0; col < width; col++) {
-      const idx = getIndex(row, col);
-      if (checkCell(cells[idx]) === state) {
-        continue;
-      }
-
-      ctx.fillRect(
-        col * (cellSize + 1) + 1,
-        row * (cellSize + 1) + 1,
-        cellSize,
-        cellSize
-      );
-    }
-  }
 }
 
 play();

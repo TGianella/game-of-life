@@ -1,0 +1,13 @@
+{
+  "gridColor": {
+    "value": "#CCCCCC"
+  },
+  "aliveColor": {
+    "value": "#FFFFFF",
+    "continueCondition": false
+  },
+  "deadColor": {
+    "value": "#000000",
+    "continueCondition": true
+  }
+}

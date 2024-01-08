@@ -24,3 +24,7 @@ export const drawPattern = (universe, pattern, row, col) => {
     universe.toggle_cell(row + deltaX, col + deltaY);
   }
 }
+
+export const isPaused = (animationId) => {
+  return animationId === null;
+};
