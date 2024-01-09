@@ -105,7 +105,7 @@ const loopShouldReset = () => {
 
 const nextFrame = () => {
   if (isPaused(animationId)) {
-    drawGrid(ctx, width, cellSize, height);
+    // drawGrid(ctx, width, cellSize, height);
     drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
     universe.tick();
     generationsCount = updateGenerationsCount(generationsCount,1);
@@ -172,6 +172,7 @@ const modifyBoard = (label, value, resize) => {
     generationsCount = resetTimerAndGenerations();
   }
 
+  drawGrid(ctx, width, cellSize, height);
   drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
 }
 
@@ -243,7 +244,7 @@ canvas.addEventListener("click", event => {
     drawPattern(universe, pulsar, row, col);
   }
 
-  drawGrid(ctx, width, cellSize, height);
+  // drawGrid(ctx, width, cellSize, height);
   drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
 });
 
@@ -260,7 +261,6 @@ function renderLoop() {
   fps.render();
   generationsCount = updateGenerationsCount(generationsCount, ticksFrequency);
 
-  drawGrid(ctx, width, cellSize, height);
   drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
 
   for (let i = 0; i < ticksFrequency; i++) {
@@ -274,4 +274,5 @@ function renderLoop() {
   animationId = requestAnimationFrame(renderLoop);
 }
 
+drawGrid(ctx, width, cellSize, height);
 play();

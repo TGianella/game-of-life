@@ -36,9 +36,19 @@ export const drawCells = (ctx, universe, memory, width, height, cellSize, import
     ctx.stroke();
 }
 
+const setGridColor = (ctx, cellSize) => {
+    if (cellSize > 3) {
+        ctx.strokeStyle = colors.gridColorLarge.value;
+    } else if (cellSize > 1) {
+        ctx.strokeStyle = colors.gridColorMedium.value;
+    } else {
+        ctx.strokeStyle = colors.gridColorSmall.value;
+    }
+}
+
 export const drawGrid = (ctx, width, cellSize, height) => {
     ctx.beginPath();
-    ctx.strokeStyle = colors.gridColor.value;
+    setGridColor(ctx, cellSize);
 
     // Vertical lines.
     for (let i = 0; i <= width; i++) {

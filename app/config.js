@@ -18,15 +18,21 @@ export const logoUrls = {
 }
 
 export const colors = {
-  gridColor: {
-  value: "#CCCCCC",
-},
+  gridColorLarge: {
+    value: "#CCCCCC",
+  },
+  gridColorMedium: {
+    value: "#EEEEEE",
+  },
+  gridColorSmall: {
+    value: "#fcfcfc",
+  },
   aliveColor: {
   value: "#FFFFFF",
       continueCondition: false,
-},
+  },
   deadColor: {
   value: "#000000",
       continueCondition: true,
-}
+  },
 }
