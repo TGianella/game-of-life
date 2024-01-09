@@ -7,11 +7,11 @@ use js_sys::Math;
 use wasm_bindgen::prelude::*;
 use std::fmt;
 
-// macro_rules! log {
-//     ( $ ( $t:tt )* ) => {
-//         web_sys::console::log_1(&format!( $ ( $t )* ).into());
-//     }
-// }
+macro_rules! log {
+    ( $ ( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $ ( $t )* ).into());
+    }
+}
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -156,22 +156,45 @@ impl Universe {
         self.cells = next;
     }
 
-    pub fn new(blank: bool, width: u32, height: u32) -> Universe {
+    pub fn new(blank: bool, width: u32, height: u32, seed: Option<Vec<u8>>) -> Universe {
         utils::set_panic_hook();
 
-        let cells = (0..width * height)
-            .map(|_i| {
-                if !blank {
-                    if Math::random() > 0.5 {
+        let cells;
+
+        log!("seed = {:?}, width = {}, height = {}", seed, width, height);
+
+        match seed {
+            Some(array) => {
+                log!("Array detected");
+                cells = array.iter().map(|cell| {
+                    if *cell == 1u8 {
                         Cell::Alive
                     } else {
                         Cell::Dead
                     }
-                } else {
-                    Cell::Dead
-                }
-            })
-            .collect();
+                })
+                    .collect();
+            },
+            None => {
+                log!("Seed null");
+                cells = (0..width * height)
+                    .map(|_i| {
+                        if !blank {
+                            if Math::random() > 0.5 {
+                                Cell::Alive
+                            } else {
+                                Cell::Dead
+                            }
+                        } else {
+                            Cell::Dead
+                        }
+                    })
+                    .collect();
+            }
+        }
+
+        log!("Cells {:?}", cells);
+
 
         Universe {
             width,
