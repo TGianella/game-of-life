@@ -7,11 +7,11 @@ use js_sys::Math;
 use wasm_bindgen::prelude::*;
 use std::fmt;
 
-macro_rules! log {
-    ( $ ( $t:tt )* ) => {
-        web_sys::console::log_1(&format!( $ ( $t )* ).into());
-    }
-}
+// macro_rules! log {
+//     ( $ ( $t:tt )* ) => {
+//         web_sys::console::log_1(&format!( $ ( $t )* ).into());
+//     }
+// }
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -161,11 +161,8 @@ impl Universe {
 
         let cells;
 
-        log!("seed = {:?}, width = {}, height = {}", seed, width, height);
-
         match seed {
             Some(array) => {
-                log!("Array detected");
                 cells = array.iter().map(|cell| {
                     if *cell == 1u8 {
                         Cell::Alive
@@ -176,7 +173,6 @@ impl Universe {
                     .collect();
             },
             None => {
-                log!("Seed null");
                 cells = (0..width * height)
                     .map(|_i| {
                         if !blank {
@@ -192,9 +188,6 @@ impl Universe {
                     .collect();
             }
         }
-
-        log!("Cells {:?}", cells);
-
 
         Universe {
             width,
