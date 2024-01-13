@@ -3,6 +3,7 @@ export const defaultValues = {
   height: 100,
   width: 100,
   cellSize: 9,
+  seed: null,
   loop: false,
   loopAfterGenerationCount: false,
   loopAfterTime: false,
