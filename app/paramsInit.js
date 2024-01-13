@@ -5,6 +5,7 @@ export const params = {
   height: query.get('height'),
   width: query.get('width'),
   cellSize: Number(query.get('cell_size')),
+  seed: query.get('seed'),
   loop: query.get('loop'),
   loopAfterGenerationCount: query.get('loopGeneration'),
   loopAfterTime: query.get('loopTime'),

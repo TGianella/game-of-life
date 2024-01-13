@@ -29,9 +29,12 @@ import {
   loopOnDeathToggle
 } from "./documentSelectors";
 
+
+
+let seed = params.seed || defaultValues.seed
 let language = params.language || defaultValues.language;
-let height = params.height || defaultValues.height;
-let width = params.width || defaultValues.width;
+let height = Math.sqrt(seed.length) || params.height || defaultValues.height;
+let width = Math.sqrt(seed.length) || params.width || defaultValues.width;
 let cellSize = params.cellSize || defaultValues.cellSize; //px
 let loop = params.loop || defaultValues.loop;
 let loopAfterGenerationCount = params.loopAfterGenerationCount || defaultValues.loopAfterGenerationCount;
