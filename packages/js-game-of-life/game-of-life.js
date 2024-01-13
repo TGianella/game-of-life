@@ -9,7 +9,7 @@ export class Cell {
 }
 
 export class Universe {
-  constructor(blank, width, height, seed) {
+  constructor(blank, width, height, seed = null) {
     this.width = width;
     this.height = height;
     if (!seed) {

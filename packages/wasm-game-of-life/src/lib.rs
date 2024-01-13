@@ -156,38 +156,22 @@ impl Universe {
         self.cells = next;
     }
 
-    pub fn new(blank: bool, width: u32, height: u32, seed: Option<Vec<u8>>) -> Universe {
+    pub fn new(blank: bool, width: u32, height: u32) -> Universe {
         utils::set_panic_hook();
 
-        let cells;
-
-        match seed {
-            Some(array) => {
-                cells = array.iter().map(|cell| {
-                    if *cell == 1u8 {
+        let cells = (0..width * height)
+            .map(|_i| {
+                if !blank {
+                    if Math::random() > 0.5 {
                         Cell::Alive
                     } else {
                         Cell::Dead
                     }
-                })
-                    .collect();
-            },
-            None => {
-                cells = (0..width * height)
-                    .map(|_i| {
-                        if !blank {
-                            if Math::random() > 0.5 {
-                                Cell::Alive
-                            } else {
-                                Cell::Dead
-                            }
-                        } else {
-                            Cell::Dead
-                        }
-                    })
-                    .collect();
-            }
-        }
+                } else {
+                    Cell::Dead
+                }
+            })
+            .collect();
 
         Universe {
             width,
