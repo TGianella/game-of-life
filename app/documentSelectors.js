@@ -15,3 +15,7 @@ export const loopPanel = document.getElementById("loopPanel");
 export const loopGenerationToggle = document.getElementById("loopGenerationToggle");
 export const loopTimeToggle = document.getElementById("loopTimeToggle");
 export const loopOnDeathToggle = document.getElementById("loopOnDeathToggle");
+export const controls = document.getElementById("controls");
+export const controlsToggle = document.getElementById("controlsToggle");
+export const changeSizeButton = document.getElementById("changeSizeButton");
+export const changeFrequencyButton = document.getElementById("changeFrequencyButton");

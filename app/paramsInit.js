@@ -9,5 +9,6 @@ export const params = {
   loopAfterGenerationCount: query.get('loopGeneration'),
   loopAfterTime: query.get('loopTime'),
   loopIfDead: query.get('loopDeath'),
+  generationsPerRender: query.get('genPerRender'),
 }
 

@@ -26,7 +26,11 @@ import {
   loopPanel,
   loopGenerationToggle,
   loopTimeToggle,
-  loopOnDeathToggle
+  loopOnDeathToggle,
+  controls,
+  controlsToggle,
+  changeSizeButton,
+  changeFrequencyButton
 } from "./documentSelectors";
 
 let language = params.language || defaultValues.language;
@@ -37,12 +41,15 @@ let loop = params.loop || defaultValues.loop;
 let loopAfterGenerationCount = params.loopAfterGenerationCount || defaultValues.loopAfterGenerationCount;
 let loopAfterTime = params.loopAfterTime || defaultValues.loopAfterTime;
 let loopIfDead = params.loopIfDead || defaultValues.loopIfDead;
+let generationsPerRender = params.generationsPerRender || defaultValues.generationsPerRender;
 let generationsLoopPoint = defaultValues.generationsLoopPoint;
 let timeLoopPoint = defaultValues.timeLoopPoint;
 let generationsThreshold = defaultValues.generationsThreshold;
 let startTime = performance.now();
 let timeElapsed;
 let pastUniverse = [];
+let demoSize = 'small';
+let demoGenerations = 1;
 
 let importUniverse = assignByLanguage(language, importUniverseWasm, importUniverseJs);
 let createUniverse = assignByLanguage(language, createUniverseWasm, createUniverseJs);
@@ -54,6 +61,7 @@ logo.setAttribute('src', assignByLanguage(language, logoUrls.wasm, logoUrls.js))
 heightInput.value = height;
 widthInput.value = width;
 cellSizeSelector.value = cellSize;
+ticksSlider.value = generationsPerRender;
 
 if (loop) {
   loopPanel.classList.toggle('hidden');
@@ -76,7 +84,6 @@ canvas.width = (cellSize + 1) * width + 1;
 const ctx = canvas.getContext('2d');
 
 let animationId = null;
-let ticksFrequency = 1;
 let generationsCount = 0;
 console.time('1000th generation');
 
@@ -130,7 +137,8 @@ resetBlankButton.addEventListener("click", event => {
 })
 
 ticksSlider.addEventListener("change", event => {
-  ticksFrequency = event.target.value;
+  generationsPerRender = event.target.value;
+  changeQueryParams('genPerRender', generationsPerRender);
 });
 
 function play() {
@@ -156,15 +164,28 @@ const modifyBoard = (label, value, resize) => {
   switch (label) {
     case 'height':
       height = value;
+      changeQueryParams(label, value)
       break;
     case 'width':
       width = value;
+      changeQueryParams(label, value)
       break;
     case 'cellSize':
       cellSize = Number(value);
+      changeQueryParams(label, value)
+      break;
+    case 'demoLarge':
+      height = 700;
+      width = 1000;
+      cellSize = 1;
+      break;
+    case 'demoSmall':
+      height = 100;
+      width = 100;
+      cellSize = 9;
       break;
   }
-  changeQueryParams(label, value)
+
   resizeCanvas(canvas, height, width, cellSize);
 
   if (resize) {
@@ -224,6 +245,25 @@ loopOnDeathToggle.addEventListener('click', event => {
   changeQueryParams('loopDeath', loopIfDead);
 })
 
+controlsToggle.addEventListener('click', () => {
+  controls.classList.toggle('hidden');
+  controlsToggle.textContent = controlsToggle.textContent === "Show controls" ? "Hide controls" : "Show controls";
+});
+
+changeSizeButton.addEventListener('click', () => {
+  demoSize = demoSize === 'small' ? 'large' : 'small';
+  changeSizeButton.textContent = demoSize === 'small' ? 'Larger grid' : "Smaller grid";
+  modifyBoard(demoSize === 'small' ? 'demoSmall' : 'demoLarge', null, true);
+})
+
+changeFrequencyButton.addEventListener('click', () => {
+  demoGenerations = demoGenerations === 1 ? 10 : 1
+  generationsPerRender = demoGenerations;
+  changeFrequencyButton.textContent = demoGenerations === 1 ? "Less renders" : "More renders";
+  changeQueryParams('genPerRender', generationsPerRender);
+  ticksSlider.value = generationsPerRender;
+})
+
 canvas.addEventListener("click", event => {
   const boundingRect = canvas.getBoundingClientRect();
 
@@ -259,11 +299,11 @@ function renderLoop() {
   }
 
   fps.render();
-  generationsCount = updateGenerationsCount(generationsCount, ticksFrequency);
+  generationsCount = updateGenerationsCount(generationsCount, generationsPerRender);
 
   drawCells(ctx, universe, memory, width, height, cellSize, importUniverse, checkCell);
 
-  for (let i = 0; i < ticksFrequency; i++) {
+  for (let i = 0; i < generationsPerRender; i++) {
     universe.tick();
   }
 

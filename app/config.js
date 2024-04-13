@@ -10,6 +10,7 @@ export const defaultValues = {
   generationsLoopPoint: 5000,
   timeLoopPoint: 60000,
   generationsThreshold: 1000,
+  generationsPerRender: 1,
 }
 
 export const logoUrls = {
